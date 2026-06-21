@@ -1826,11 +1826,40 @@ let speechRecognition = null;
 // ══════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════
-function show(id) {
+function show(id, opts) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+
+  // Register this screen in browser history so Back/swipe-back moves
+  // within the app instead of exiting the page and losing answers.
+  const skipPush = opts && opts.skipPush;
+  if (!skipPush) {
+    const histState = { pvScreen: id };
+    if (history.state && history.state.pvScreen === id) {
+      // Already on this screen in history — don't push a duplicate.
+      history.replaceState(histState, '');
+    } else {
+      history.pushState(histState, '');
+    }
+  }
 }
+
+// Handle the actual Back/Forward browser action.
+window.addEventListener('popstate', (e) => {
+  const st = e.state;
+  const targetId = st && st.pvScreen;
+  if (!targetId || !document.getElementById(targetId)) return;
+
+  if (targetId === 's-convo' && typeof st.pvQ === 'number') {
+    state.current = st.pvQ;
+    renderProgress();
+    renderQuestion();
+  }
+
+  // Re-render without pushing a new history entry (we're already on it).
+  show(targetId, { skipPush: true });
+});
 
 function greet() {
   const h = new Date().getHours();
@@ -1845,6 +1874,8 @@ function startSession() {
   renderProgress();
   renderQuestion();
   show('s-convo');
+  // Tag this first history entry with the question index too.
+  history.replaceState({ pvScreen: 's-convo', pvQ: 0 }, '');
 }
 
 // ══════════════════════════════════════
@@ -2067,13 +2098,19 @@ function nextQ() {
     state.current++;
     renderProgress();
     renderQuestion();
+    // Each question is its own history entry — Back steps through them.
+    history.pushState({ pvScreen: 's-convo', pvQ: state.current }, '');
   } else {
     show('s-capture');
   }
 }
 
 function prevQ() {
-  if (state.current > 0) {
+  // If there's an in-app history entry to go back to, use the real
+  // Back action so it stays in sync with the browser's Back button.
+  if (history.state && typeof history.state.pvQ === 'number' && history.state.pvQ > 0) {
+    history.back();
+  } else if (state.current > 0) {
     state.current--;
     renderProgress();
     renderQuestion();
