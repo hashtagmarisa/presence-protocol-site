@@ -1090,6 +1090,7 @@
 
 .hd-field-row { display: flex; gap: 12px; margin-bottom: 14px; }
 .hd-field { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.hd-field-time { flex: 0 0 150px; }
 
 .hd-label {
   font-size: 10px;
@@ -1457,6 +1458,9 @@
   .meter-row { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .results-body { padding: 36px 22px 60px; }
   .results-header { padding: 44px 22px; }
+
+  .hd-field-row { flex-direction: column; gap: 14px; margin-bottom: 0; }
+  .hd-field-row .hd-field { flex: 1 1 100%; }
 }
 .pv-root { font-family: 'Instrument Sans', sans-serif; width: 100%; }
 .pv-root * { box-sizing: border-box; }
@@ -1497,7 +1501,7 @@
               <label class="hd-label">Date of birth</label>
               <input class="hd-input" type="date" id="hd-dob" onchange="hdFormCheck()">
             </div>
-            <div class="hd-field" style="flex:0 0 130px;">
+            <div class="hd-field hd-field-time">
               <label class="hd-label">Time of birth <span style="color:#bbb; font-size:9px; text-transform:none; letter-spacing:0;">(if known)</span></label>
               <input class="hd-input" type="time" id="hd-time" onchange="hdFormCheck()">
             </div>
