@@ -1,0 +1,3135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presence Vault · Presence Protocol™</title>
+</head>
+<body style="margin:0;padding:0;background:#f9f6f1;">
+<!-- Presence Vault · Presence Protocol™ · Be Present LLC -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --forest: #1b4332;
+  --forest-mid: #2d6a4f;
+  --sage: #74a98a;
+  --sage-light: #b7d5c3;
+  --mint-pale: #edf7f1;
+  --cream: #f9f6f1;
+  --warm: #f2ede5;
+  --ink: #1c1c1c;
+  --ink-mid: #4a4a4a;
+  --ink-light: #888;
+  --border: rgba(27,67,50,0.1);
+}
+
+.pv-root {
+  height: 100%;
+  background: var(--cream);
+  font-family: 'Instrument Sans', sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── TOPBAR ── */
+/* ── SCREENS ── */
+.screen { display: none; animation: appear 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+.screen.active { display: block; }
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══ ENTRY ══ */
+.entry {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.entry::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 700px 400px at 75% 20%, rgba(116,169,138,0.08), transparent 70%),
+    radial-gradient(ellipse 400px 500px at 15% 85%, rgba(27,67,50,0.05), transparent 70%);
+  pointer-events: none;
+}
+
+.entry-inner {
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.entry-time {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+.entry-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--forest);
+  margin-bottom: 18px;
+}
+
+.entry-heading em { font-style: italic; color: var(--forest-mid); }
+
+.entry-sub {
+  font-size: 15px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  margin-bottom: 44px;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 17px 40px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.25s;
+}
+.entry-btn:hover {
+  background: var(--forest-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(27,67,50,0.2);
+}
+
+.entry-note {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: italic;
+}
+
+/* ══ CONVERSATION ══ */
+.convo-wrap {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  max-width: 1080px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.convo-main {
+  padding: 60px 52px 60px 44px;
+  border-right: 1px solid var(--border);
+}
+
+.progress-track {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 52px;
+}
+
+.progress-seg {
+  height: 2px;
+  flex: 1;
+  background: #e0dbd3;
+  border-radius: 2px;
+  transition: background 0.5s ease;
+}
+.progress-seg.fill   { background: var(--forest); }
+.progress-seg.active { background: var(--sage); }
+
+.q-area { min-height: 360px; }
+
+.q-number {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.q-stem {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.q-nudge {
+  font-size: 13px;
+  color: var(--ink-light);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+/* Choice buttons — the primary answer mode */
+.ans-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.ans-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink-mid);
+  line-height: 1.5;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.ans-btn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--sage);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.ans-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #d0cec9;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+
+.ans-btn:hover {
+  border-color: var(--sage-light);
+  background: var(--mint-pale);
+  color: var(--ink);
+}
+.ans-btn:hover .ans-dot { border-color: var(--sage); }
+.ans-btn:hover::after { transform: scaleY(1); }
+
+.ans-btn.sel {
+  border-color: var(--forest);
+  background: var(--mint-pale);
+  color: var(--forest);
+  font-weight: 400;
+}
+.ans-btn.sel::after { transform: scaleY(1); background: var(--forest); }
+.ans-btn.sel .ans-dot {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.ans-btn.sel .ans-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* ── VOICE OPTION ── */
+.voice-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+
+.voice-divider::before,
+.voice-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.voice-divider span {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+.voice-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 1px dashed rgba(27,67,50,0.2);
+  border-radius: 3px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--ink-light);
+  transition: all 0.2s;
+  margin-bottom: 28px;
+}
+
+.voice-btn:hover {
+  border-color: var(--sage);
+  color: var(--forest);
+  background: var(--mint-pale);
+}
+
+.voice-btn.recording {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: #fff8f7;
+  animation: pulse-rec 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-rec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+}
+
+.voice-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.voice-btn.recording .voice-icon {
+  background: #fff0ef;
+  border-color: #e74c3c;
+}
+
+.voice-transcript {
+  display: none;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--forest);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  animation: appear 0.3s ease both;
+}
+
+/* Scale */
+.scale-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.scale-btn {
+  flex: 1;
+  padding: 16px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+.scale-btn:hover { border-color: var(--sage); color: var(--forest); background: var(--mint-pale); }
+.scale-btn.sel { background: var(--forest); border-color: var(--forest); color: white; }
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--ink-light);
+  margin-bottom: 32px;
+}
+
+/* Nav */
+.nav-row { display: flex; align-items: center; gap: 14px; }
+
+.btn-next {
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 14px 34px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-next:hover:not(:disabled) { background: var(--forest-mid); transform: translateY(-1px); }
+.btn-next:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.btn-back {
+  background: none;
+  border: none;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  color: var(--ink-light);
+  cursor: pointer;
+  padding: 14px 0;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.btn-back:hover { color: var(--forest); }
+
+/* ── REFLECTION PANEL ── */
+.reflection-panel {
+  padding: 44px 32px;
+  background: var(--warm);
+  position: sticky;
+  top: 69px;
+  height: calc(100vh - 69px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.reflection-empty {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-style: italic;
+  color: var(--ink-light);
+  line-height: 1.7;
+  opacity: 0.55;
+}
+
+.reflection-card {
+  background: white;
+  border-radius: 3px;
+  padding: 18px 18px;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--sage-light);
+  animation: slideIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.refl-topic {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.refl-answer {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-mid);
+  line-height: 1.55;
+}
+
+/* ══ RESULTS ══ */
+.results-wrap { min-height: calc(100vh - 120px); }
+
+.results-header {
+  background: var(--forest);
+  padding: 64px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 600px 300px at 50% 60%, rgba(116,169,138,0.14), transparent 70%);
+  pointer-events: none;
+}
+
+.results-eyebrow {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.results-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 400;
+  color: white;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  position: relative;
+}
+.results-headline em { font-style: italic; color: var(--sage-light); }
+
+.results-tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,0.42);
+  font-weight: 300;
+  font-style: italic;
+  position: relative;
+}
+
+.results-body {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 52px 40px 80px;
+}
+
+/* Meters */
+.meter-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+.meter-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 28px 18px 20px;
+  text-align: center;
+}
+
+.meter-ring {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.meter-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.meter-ring circle { fill: none; stroke-width: 4; }
+.ring-bg { stroke: #ece8e1; }
+.ring-fill {
+  stroke: var(--forest);
+  stroke-linecap: round;
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.22,1,0.36,1);
+}
+
+.meter-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--forest);
+  margin-top: 1px;
+}
+
+.meter-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  font-weight: 500;
+}
+
+.meter-status {
+  font-size: 11px;
+  color: var(--sage);
+  margin-top: 4px;
+}
+
+/* Insight cards */
+.insight {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 30px;
+  margin-bottom: 14px;
+}
+
+.insight-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.insight-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 21px;
+  font-weight: 500;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.insight-body {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+.callout {
+  background: var(--forest);
+  color: white;
+  border-radius: 3px;
+  padding: 32px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.callout::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.callout-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.callout-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 400;
+  font-style: italic;
+  color: white;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.callout-body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+.results-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.btn-solid {
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 15px 32px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-solid:hover { background: var(--forest-mid); transform: translateY(-1px); }
+
+.btn-outline {
+  background: white;
+  color: var(--forest);
+  border: 1px solid var(--border);
+  padding: 15px 32px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--sage); }
+
+.closing-line {
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.closing-line p {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ink-light);
+  line-height: 1.6;
+}
+
+/* ══ CAPTURE (post check-in, pre-results) ══ */
+.capture-wrap {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+}
+.capture-card {
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+.capture-eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+.capture-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+.capture-sub {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.capture-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.capture-input {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.capture-input:focus { border-color: var(--sage); }
+.capture-reminder-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.5;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.capture-reminder-label input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--forest);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.capture-privacy {
+  font-size: 11.5px;
+  color: var(--ink-light);
+  font-style: italic;
+  margin-top: 18px;
+  line-height: 1.6;
+}
+.capture-skip {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  color: var(--ink-light);
+  font-size: 11.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: 'Instrument Sans', sans-serif;
+  line-height: 1.65;
+}
+.closing-line span {
+  line-height: 1.65;
+}
+.closing-line span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+/* ── ENTRY STATS ── */
+.entry-stat {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 20px;
+  text-align: center;
+  min-width: 100px;
+}
+.entry-stat .stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1;
+  display: block;
+}
+.entry-stat .stat-lbl {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-top: 4px;
+  display: block;
+}
+.entry-history-btn {
+  display: inline-block;
+  margin-top: 18px;
+  background: none;
+  border: none;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  color: var(--sage);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.entry-history-btn:hover { color: var(--forest); }
+
+/* ── PERIOD TABS ── */
+.period-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.period-tab {
+  padding: 9px 18px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.period-tab:hover { border-color: var(--sage); color: var(--forest); }
+.period-tab.active { background: var(--forest); border-color: var(--forest); color: white; }
+
+/* ── HISTORY SUMMARY ROW ── */
+.history-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.summary-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 22px 16px;
+  text-align: center;
+}
+.summary-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.summary-lbl {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+.summary-delta {
+  font-size: 11px;
+  color: var(--sage);
+  margin-top: 4px;
+}
+
+/* ── TREND CHART ── */
+.history-section { margin-bottom: 36px; }
+.history-section-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.trend-chart {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 20px;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  overflow: hidden;
+}
+.trend-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.trend-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--sage-light);
+  transition: height 0.8s cubic-bezier(0.22,1,0.36,1);
+  position: relative;
+  min-height: 4px;
+  cursor: default;
+}
+.trend-bar.today-bar { background: var(--forest); }
+.trend-bar-label {
+  font-size: 9px;
+  color: var(--ink-light);
+  text-align: center;
+  white-space: nowrap;
+}
+.trend-empty {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ink-light);
+  text-align: center;
+  width: 100%;
+  align-self: center;
+}
+
+/* ── TAG BARS ── */
+.tag-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.tag-bar-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-mid);
+  width: 130px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+}
+.tag-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #ece8e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tag-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--forest));
+  border-radius: 6px;
+  transition: width 1s cubic-bezier(0.22,1,0.36,1);
+}
+.tag-bar-count {
+  font-size: 11px;
+  color: var(--ink-light);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── CHECK-IN LOG ── */
+.log-entry {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+.log-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sage);
+  flex-shrink: 0;
+}
+.log-date {
+  font-size: 12px;
+  color: var(--ink-mid);
+  font-weight: 400;
+}
+.log-theme {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: italic;
+}
+.log-scores {
+  display: flex;
+  gap: 8px;
+}
+.log-score {
+  font-size: 11px;
+  color: var(--forest);
+  background: var(--mint-pale);
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+.no-data {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ink-light);
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* ── HUMAN DESIGN ── */
+.hd-form { text-align: left; width: 100%; margin-top: 32px; }
+
+.hd-field-row { display: flex; gap: 12px; margin-bottom: 14px; }
+.hd-field { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+
+.hd-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+}
+
+.hd-input {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 13px 16px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.hd-input:focus { border-color: var(--sage); }
+
+.hd-preview {
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  animation: appear 0.4s ease both;
+}
+.hd-preview-type {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+.hd-preview-sub {
+  font-size: 12px;
+  color: var(--sage);
+  font-weight: 300;
+}
+
+/* HD Reveal screen */
+.hd-reveal-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 28px;
+  margin-top: 24px;
+  margin-bottom: 20px;
+}
+.hd-reveal-desc {
+  font-size: 14px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.hd-reveal-strategy {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-style: italic;
+  color: var(--forest);
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.hd-pillars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hd-pillar {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 18px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.hd-pillar-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.hd-pillar-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.hd-pillar-text {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+/* HD badge on entry */
+.hd-badge-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--forest);
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+
+/* HD-aware question accent */
+.hd-question-banner {
+  background: var(--mint-pale);
+  border-left: 3px solid var(--sage);
+  border-radius: 0 3px 3px 0;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 12.5px;
+  color: var(--forest);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* ══ QUALIFYING ASSESSMENT OVERLAY ══ */
+.qa-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27,67,50,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: qaFadeIn 0.4s ease both;
+}
+
+@keyframes qaFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.qa-drawer {
+  background: var(--cream);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 6px 6px 0 0;
+  padding: 44px 44px 52px;
+  position: relative;
+  animation: qaSlideUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes qaSlideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.qa-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--ink-light);
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+.qa-close:hover { color: var(--forest); }
+
+.qa-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.qa-heading {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.qa-sub {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+/* Assessment questions */
+.qa-q-block { margin-bottom: 24px; }
+
+.qa-q-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.qa-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.qa-opt {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 11px 16px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ink-mid);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qa-opt::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #d0cec9;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+
+.qa-opt:hover { border-color: var(--sage-light); background: var(--mint-pale); }
+.qa-opt.sel   { border-color: var(--forest); background: var(--mint-pale); color: var(--forest); font-weight: 400; }
+.qa-opt.sel::before { background: var(--forest); border-color: var(--forest); }
+
+/* Email capture */
+.qa-capture { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+.qa-capture-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+.qa-input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 13px 16px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+  display: block;
+}
+.qa-input:focus { border-color: var(--sage); }
+
+.qa-submit-btn {
+  width: 100%;
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.qa-submit-btn:hover:not(:disabled) { background: var(--forest-mid); }
+.qa-submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.qa-privacy {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: italic;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Confirmation */
+.qa-confirm-wrap { text-align: center; padding: 20px 0; }
+
+.qa-confirm-icon {
+  font-size: 36px;
+  color: var(--sage);
+  margin-bottom: 20px;
+}
+
+.qa-confirm-note {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ink-mid);
+  line-height: 1.75;
+  max-width: 420px;
+  margin: 16px auto 28px;
+}
+
+.qa-dismiss-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 28px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.qa-dismiss-btn:hover { border-color: var(--sage); color: var(--forest); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 720px) {
+  .convo-wrap { grid-template-columns: 1fr; }
+  .reflection-panel { display: none; }
+  .convo-main { padding: 36px 22px; }
+
+  .meter-row { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .results-body { padding: 36px 22px 60px; }
+  .results-header { padding: 44px 22px; }
+}
+.pv-root { font-family: 'Instrument Sans', sans-serif; width: 100%; }
+.pv-root * { box-sizing: border-box; }
+.sqs-block-code { padding: 0 !important; margin: 0 !important; }
+</style>
+<div class="pv-root">
+<div class="app">
+
+
+  <!-- ══ ENTRY ══ -->
+  <!-- ══ HD SETUP ══ -->
+  <div class="screen" id="s-hd-setup">
+    <div class="entry">
+      <div class="entry-inner" style="max-width:560px;">
+
+        <div style="display:inline-flex; align-items:center; gap:8px; background:var(--mint-pale); border:1px solid var(--sage-light); border-radius:20px; padding:6px 14px; font-size:11px; color:var(--forest); font-weight:500; margin-bottom:24px; letter-spacing:0.3px;">
+          ⚡ Presence Vault · Be Present LLC
+        </div>
+
+        <h1 class="entry-heading" style="font-size:clamp(30px,5vw,50px);">Your check-ins should<br><em>know who you are.</em></h1>
+        <p class="entry-sub" style="margin-bottom:28px;">The Presence Protocol™ uses your wiring — your energy type, how you make decisions, how you show up — to personalise every check-in to you specifically. Not a generic template. A daily operating system built around how you actually work.</p>
+
+        <div style="display:flex; gap:20px; margin-bottom:28px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-mid); font-weight:300;">
+            <span style="color:var(--sage);">◎</span> Stays on your device
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-mid); font-weight:300;">
+            <span style="color:var(--sage);">◎</span> Never shared or stored
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--ink-mid); font-weight:300;">
+            <span style="color:var(--sage);">◎</span> Takes 30 seconds
+          </div>
+        </div>
+
+        <div class="hd-form">
+          <div class="hd-field-row">
+            <div class="hd-field">
+              <label class="hd-label">Date of birth</label>
+              <input class="hd-input" type="date" id="hd-dob" onchange="hdFormCheck()">
+            </div>
+            <div class="hd-field" style="flex:0 0 130px;">
+              <label class="hd-label">Time of birth <span style="color:#bbb; font-size:9px; text-transform:none; letter-spacing:0;">(if known)</span></label>
+              <input class="hd-input" type="time" id="hd-time" onchange="hdFormCheck()">
+            </div>
+          </div>
+          <div class="hd-field">
+            <label class="hd-label">City of birth</label>
+            <input class="hd-input" type="text" id="hd-city" placeholder="e.g. Nashville, TN" oninput="hdFormCheck()">
+          </div>
+
+          <div id="hd-preview" style="display:none;" class="hd-preview"></div>
+
+          <button class="entry-btn" id="hd-submit-btn" disabled onclick="submitHD()" style="width:100%; justify-content:center; margin-top:4px;">
+            Reveal My Design
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <div style="text-align:center; margin-top:16px;">
+            <button onclick="skipHD()" style="background:none; border:none; font-family:'Instrument Sans',sans-serif; font-size:12px; color:var(--ink-light); cursor:pointer; text-decoration:underline; text-underline-offset:3px; transition:color 0.2s;" onmouseover="this.style.color='var(--forest)'" onmouseout="this.style.color='var(--ink-light)'">
+              Skip for now — use without personalisation
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HD REVEAL ══ -->
+  <div class="screen" id="s-hd-reveal">
+    <div class="entry" style="align-items:flex-start; padding-top:80px;">
+      <div class="entry-inner" style="max-width:580px; text-align:left;">
+        <div class="entry-time" id="hd-reveal-eyebrow">Your Design</div>
+        <h1 class="entry-heading" style="font-size:clamp(32px,5vw,52px); text-align:left;" id="hd-reveal-title">You're a —</h1>
+        <div class="hd-reveal-card" id="hd-reveal-card"></div>
+        <div class="hd-pillars" id="hd-pillars"></div>
+        <button class="entry-btn" onclick="show('s-entry')" style="margin-top:36px;">
+          Start My Check-In
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="entry-history-btn" onclick="show('s-hd-setup')" style="display:block; margin-top:12px;">← Edit my details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ENTRY ══ -->
+  <div class="screen" id="s-entry">
+    <div class="entry">
+      <div class="entry-inner">
+        <div class="entry-time" id="entry-greeting">Good morning</div>
+        <div id="hd-badge" style="display:none;" class="hd-badge-strip"></div>
+        <h1 class="entry-heading">Where are you,<br><em>really?</em></h1>
+        <p class="entry-sub" id="entry-sub-text">Not the version of you on the calendar. The one that showed up today.</p>
+        <button class="entry-btn" onclick="startSession()">
+          Begin Check-In
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <p class="entry-note">Under 2 minutes. No typing. Saved privately on this device.</p>
+        <div id="entry-stats" style="display:none; margin-top:32px; border-top:1px solid var(--border); padding-top:28px;">
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <div id="stat-streak" class="entry-stat"></div>
+            <div id="stat-total" class="entry-stat"></div>
+            <div id="stat-last" class="entry-stat"></div>
+          </div>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:4px;">
+            <button class="entry-history-btn" onclick="show('s-history')">View My Patterns →</button>
+            <button class="entry-history-btn" onclick="show('s-hd-reveal')" style="color:var(--ink-light);">My Design ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONVERSATION ══ -->
+  <div class="screen" id="s-convo">
+    <div class="convo-wrap">
+      <div class="convo-main">
+        <div class="progress-track" id="progress-track"></div>
+        <div class="q-area" id="q-area"></div>
+        <div class="nav-row">
+          <button class="btn-back" id="btn-back" onclick="prevQ()">← Back</button>
+          <button class="btn-next" id="btn-next" disabled onclick="nextQ()">Continue</button>
+        </div>
+      </div>
+      <div class="reflection-panel">
+        <div class="panel-label">What I'm hearing</div>
+        <div id="reflections">
+          <p class="reflection-empty">Your reflection builds as you answer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CAPTURE (post check-in, pre-results) ══ -->
+  <div class="screen" id="s-capture">
+    <div class="capture-wrap">
+      <div class="capture-card">
+        <div class="capture-eyebrow">One Last Thing</div>
+        <div class="capture-heading">Where should we save this?</div>
+        <p class="capture-sub">Your check-in is ready. Save it so you can track your patterns over time — your information is used only to store your personal check-in history.</p>
+        <div class="capture-field-group">
+          <input class="capture-input" type="text" id="capture-name" placeholder="Your name">
+          <input class="capture-input" type="email" id="capture-email" placeholder="Your email">
+        </div>
+        <label class="capture-reminder-label">
+          <input type="checkbox" id="capture-reminder">
+          <span>Remind me to check in tomorrow — add to my calendar</span>
+        </label>
+        <button class="btn-solid" id="btn-capture-save" onclick="handleCaptureSave()" style="width:100%;">See My Results →</button>
+        <p class="capture-privacy">Your check-in still shows below either way — saving just lets you track it over time.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div class="screen" id="s-history">
+    <div class="results-wrap">
+      <div class="results-header">
+        <div class="results-eyebrow">Your Patterns</div>
+        <div class="results-headline">What the<br><em>data says.</em></div>
+        <div class="results-tagline">Across all your check-ins.</div>
+      </div>
+      <div class="results-body">
+        <div class="period-tabs">
+          <button class="period-tab active" onclick="switchPeriod('today',this)">Today</button>
+          <button class="period-tab" onclick="switchPeriod('week',this)">This Week</button>
+          <button class="period-tab" onclick="switchPeriod('month',this)">This Month</button>
+          <button class="period-tab" onclick="switchPeriod('all',this)">All Time</button>
+        </div>
+        <div id="history-summary"></div>
+        <div class="history-section">
+          <div class="history-section-label">Energy over time</div>
+          <div id="trend-chart" class="trend-chart"></div>
+        </div>
+        <div class="history-section">
+          <div class="history-section-label">Where your attention keeps going</div>
+          <div id="tag-bars"></div>
+        </div>
+        <div class="history-section">
+          <div class="history-section-label">Check-in log</div>
+          <div id="checkin-log"></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-solid" onclick="startSession()">New Check-In</button>
+          <button class="btn-outline" onclick="show('s-entry')">← Home</button>
+          <button class="btn-outline" style="margin-left:auto;color:#c0392b;border-color:#f5c6c6;" onclick="clearHistory()">Clear History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div class="screen" id="s-results">
+    <div class="results-wrap">
+      <div class="results-header">
+        <div class="results-eyebrow">Your Check-In · <span id="result-date"></span></div>
+        <div class="results-headline" id="result-headline">Here's what<br><em>I'm seeing.</em></div>
+        <div class="results-tagline" id="result-tagline">Based on where you are today.</div>
+      </div>
+      <div class="results-body">
+        <div class="meter-row" id="meter-row"></div>
+        <div id="insights-area"></div>
+        <div class="results-actions">
+          <button class="btn-solid" onclick="startSession()">Check In Again</button>
+          <button class="btn-outline" onclick="show('s-entry')">← Home</button>
+          <button class="btn-outline" onclick="show('s-history')">View My Patterns →</button>
+        </div>
+        <div class="closing-line">
+          <p id="closing-quote">"You don't need to do more. You need to be more present with what you're already doing."</p>
+          <span>Be Present LLC · Marisa Cali</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ QUALIFYING ASSESSMENT OVERLAY ══ -->
+  <div id="qa-overlay" class="qa-overlay" style="display:none;">
+    <div class="qa-drawer" id="qa-drawer">
+      <button class="qa-close" onclick="dismissQA()" aria-label="Close">×</button>
+
+      <div id="qa-phase-assess">
+        <div class="qa-eyebrow">One more thing</div>
+        <div class="qa-heading">Want to know what kind of support would actually move the needle for you right now?</div>
+        <p class="qa-sub">Five quick questions. I'll tell you exactly which of my offerings fits where you are — no guessing, no generic sales page.</p>
+
+        <div id="qa-questions-wrap"></div>
+
+        <div class="qa-capture" id="qa-capture" style="display:none;">
+          <div class="qa-capture-label">Where should I send your recommendation?</div>
+          <input class="qa-input" type="text" id="qa-name" placeholder="Your first name">
+          <input class="qa-input" type="email" id="qa-email" placeholder="Your email address" oninput="qaCheckReady()">
+          <button class="qa-submit-btn" id="qa-submit-btn" disabled onclick="submitQA()">
+            Send My Recommendation
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="qa-privacy">No spam. One relevant email. Unsubscribe any time.</p>
+        </div>
+      </div>
+
+      <div id="qa-phase-confirm" style="display:none;">
+        <div class="qa-confirm-wrap">
+          <div class="qa-confirm-icon">◎</div>
+          <div class="qa-eyebrow">From Marisa</div>
+          <div class="qa-heading" id="qa-confirm-heading">Thank you.</div>
+          <div class="qa-confirm-note" id="qa-confirm-note"></div>
+          <button class="qa-dismiss-btn" onclick="dismissQA()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<script>
+// ══════════════════════════════════════
+// QUESTION BANK — all button-based, no typing
+// ══════════════════════════════════════
+const questions = [
+  {
+    id: 'arrival',
+    number: '01',
+    stem: 'Before we go anywhere — what brought you here today?',
+    nudge: 'There\'s no wrong answer. Something made you pause.',
+    type: 'choice',
+    choices: [
+      { text: 'I feel scattered. My mind is already in five places.', tags: ['scattered','energy'] },
+      { text: 'Something\'s off and I can\'t quite name it yet.', tags: ['blocked','presence'] },
+      { text: 'I\'m tired of being busy but not actually moving forward.', tags: ['busy','clarity'] },
+      { text: 'I want to check in before the day gets away from me.', tags: ['intentional','presence'] },
+    ]
+  },
+  {
+    id: 'capacity',
+    number: '02',
+    stem: 'How much of yourself is actually available right now?',
+    nudge: 'Not what you\'re capable of — what\'s honestly here today.',
+    type: 'scale',
+    scaleLabels: ['Running on fumes', 'Somewhere in between', 'Fully here'],
+    tags: ['energy','capacity']
+  },
+  {
+    id: 'where-energy',
+    number: '03',
+    stem: 'Where is most of your energy actually going?',
+    nudge: 'Follow the truth, not what sounds good.',
+    type: 'choice',
+    choices: [
+      { text: 'Reacting to other people\'s priorities and urgency.', tags: ['reactive','boundaries'] },
+      { text: 'Tasks that feel productive but aren\'t moving the needle.', tags: ['busy','clarity'] },
+      { text: 'Managing relationships — people, expectations, noise.', tags: ['relationships','energy'] },
+      { text: 'Overthinking before I even begin anything.', tags: ['blocked','clarity'] },
+    ]
+  },
+  {
+    id: 'presence-gap',
+    number: '04',
+    stem: 'When did you last feel fully present?',
+    nudge: 'In a conversation, a decision, a moment of real focus.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'Earlier today — I had a clear moment this morning.', tags: ['present','grounded'] },
+      { text: 'Yesterday, briefly — it didn\'t last long.', tags: ['presence','fleeting'] },
+      { text: 'A few days ago. It\'s been harder lately.', tags: ['presence','gap'] },
+      { text: 'Honestly, I can\'t remember the last time.', tags: ['presence','depleted'] },
+    ]
+  },
+  {
+    id: 'showing-up',
+    number: '05',
+    stem: 'How are you showing up for the people around you right now?',
+    nudge: 'Not how you want to — how you actually are.',
+    type: 'choice',
+    choices: [
+      { text: 'Present in the room, but somewhere else in my head.', tags: ['presence','distracted'] },
+      { text: 'Responsive, but stretched too thin to really be there.', tags: ['reactive','capacity'] },
+      { text: 'Consistent — but I know there\'s more I could give.', tags: ['steady','blocked'] },
+      { text: 'Honestly? I\'m not sure they\'d say I\'m really here.', tags: ['presence','gap'] },
+    ]
+  },
+  {
+    id: 'blocker',
+    number: '06',
+    stem: 'What\'s sitting just behind everything else right now?',
+    nudge: 'The thing you keep circling back to. You don\'t need to solve it — just name it.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'A decision I\'ve been avoiding making.', tags: ['blocked','clarity'] },
+      { text: 'A relationship or dynamic that\'s draining me quietly.', tags: ['relationships','energy'] },
+      { text: 'Uncertainty about where I\'m actually headed.', tags: ['clarity','direction'] },
+      { text: 'The gap between what I\'m doing and what I want to be building.', tags: ['busy','purpose'] },
+    ]
+  },
+  {
+    id: 'one-thing',
+    number: '07',
+    stem: 'If you released one thing today, what would create the most space?',
+    nudge: 'The answer usually comes fast. Trust it.',
+    type: 'choice',
+    choices: [
+      { text: 'The need to respond to everything immediately.', tags: ['boundaries','presence'] },
+      { text: 'A commitment or meeting that isn\'t mine to carry.', tags: ['energy','clarity'] },
+      { text: 'The story I\'m telling myself about what I should be doing.', tags: ['blocked','clarity'] },
+      { text: 'Performing busyness instead of choosing real focus.', tags: ['busy','presence'] },
+    ]
+  },
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let state = { current: 0, answers: {}, tagCounts: {} };
+let mediaRecorder = null;
+let isRecording = false;
+let speechRecognition = null;
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function greet() {
+  const h = new Date().getHours();
+  document.getElementById('entry-greeting').textContent =
+    h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+function startSession() {
+  state = { current: 0, answers: {}, tagCounts: {} };
+  captureInfo = { name: "", email: "", wantsReminder: false };
+  document.getElementById('reflections').innerHTML = '<p class="reflection-empty">Your reflection builds as you answer.</p>';
+  renderProgress();
+  renderQuestion();
+  show('s-convo');
+}
+
+// ══════════════════════════════════════
+// PROGRESS BAR
+// ══════════════════════════════════════
+function renderProgress() {
+  document.getElementById('progress-track').innerHTML =
+    questions.map((_, i) => {
+      const cls = i < state.current ? 'fill' : i === state.current ? 'active' : '';
+      return `<div class="progress-seg ${cls}"></div>`;
+    }).join('');
+}
+
+// ══════════════════════════════════════
+// QUESTION RENDER
+// ══════════════════════════════════════
+function renderQuestion() {
+  const q = questions[state.current];
+  const saved = state.answers[q.id];
+  const area = document.getElementById('q-area');
+
+  let html = `
+    <div class="q-number">${q.number} / 0${questions.length}</div>
+    <div class="q-stem">${q.stem}</div>
+    <div class="q-nudge">${q.nudge}</div>
+  `;
+
+  if (q.type === 'choice') {
+    html += `<div class="ans-choices">
+      ${q.choices.map((c, i) => `
+        <button class="ans-btn ${saved?.value === i ? 'sel' : ''}"
+          onclick="selectChoice(${i})">
+          <span class="ans-dot"></span>${c.text}
+        </button>`).join('')}
+    </div>`;
+
+    // Voice option on select questions
+    if (q.voiceEnabled) {
+      html += `
+        <div class="voice-divider"><span>or say it instead</span></div>
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">
+          <div class="voice-icon" id="voice-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="4.5" y="1" width="5" height="7" rx="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 7.5a5 5 0 0010 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="7" y1="12.5" x2="7" y2="10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span id="voice-label">Tap to speak your answer</span>
+        </button>
+        <div class="voice-transcript" id="voice-transcript"></div>`;
+    }
+  }
+
+  else if (q.type === 'scale') {
+    const val = saved?.value ?? null;
+    html += `
+      <div class="scale-row">
+        ${[1,2,3,4,5].map(n => `
+          <button class="scale-btn ${val === n ? 'sel' : ''}"
+            onclick="selectScale(${n})">${n}</button>`).join('')}
+      </div>
+      <div class="scale-labels">
+        <span>${q.scaleLabels[0]}</span>
+        <span>${q.scaleLabels[1]}</span>
+        <span>${q.scaleLabels[2]}</span>
+      </div>`;
+  }
+
+  area.innerHTML = html;
+  updateNextBtn();
+  document.getElementById('btn-back').style.visibility = state.current === 0 ? 'hidden' : 'visible';
+}
+
+// ══════════════════════════════════════
+// ANSWER HANDLERS
+// ══════════════════════════════════════
+function selectChoice(idx) {
+  const q = questions[state.current];
+  const c = q.choices[idx];
+  state.answers[q.id] = { value: idx, text: c.text, tags: c.tags };
+  c.tags.forEach(t => state.tagCounts[t] = (state.tagCounts[t] || 0) + 1);
+  document.querySelectorAll('.ans-btn').forEach((b, i) => {
+    b.classList.toggle('sel', i === idx);
+    const dot = b.querySelector('.ans-dot');
+    if (dot) {
+      dot.style.background = i === idx ? 'var(--forest)' : '';
+      dot.style.borderColor = i === idx ? 'var(--forest)' : '';
+    }
+  });
+  updateNextBtn();
+  addReflection(q, c.text);
+}
+
+function selectScale(n) {
+  const q = questions[state.current];
+  state.answers[q.id] = { value: n, text: `${n} out of 5`, tags: q.tags };
+  q.tags.forEach(t => state.tagCounts[t] = (state.tagCounts[t] || 0) + (6 - n) / 5);
+  document.querySelectorAll('.scale-btn').forEach((b, i) => b.classList.toggle('sel', i + 1 === n));
+  updateNextBtn();
+  addReflection(q, scaleLabel(n, q.scaleLabels));
+}
+
+function scaleLabel(n, labels) {
+  if (n <= 2) return labels[0];
+  if (n === 3) return labels[1];
+  return labels[2];
+}
+
+function updateNextBtn() {
+  const q = questions[state.current];
+  const answered = !!state.answers[q.id];
+  const btn = document.getElementById('btn-next');
+  btn.disabled = !answered;
+  btn.textContent = state.current < questions.length - 1 ? 'Continue' : 'See My Reflection';
+}
+
+// ══════════════════════════════════════
+// VOICE CAPTURE
+// ══════════════════════════════════════
+function toggleVoice() {
+  if (isRecording) {
+    stopVoice();
+  } else {
+    startVoice();
+  }
+}
+
+function startVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Voice capture isn\'t supported in this browser. Try Chrome or Safari.');
+    return;
+  }
+
+  speechRecognition = new SpeechRecognition();
+  speechRecognition.continuous = false;
+  speechRecognition.interimResults = true;
+  speechRecognition.lang = 'en-US';
+
+  const btn = document.getElementById('voice-btn');
+  const label = document.getElementById('voice-label');
+  const transcript = document.getElementById('voice-transcript');
+  const icon = document.getElementById('voice-icon');
+
+  btn.classList.add('recording');
+  icon.style.background = '#fff0ef';
+  icon.style.borderColor = '#e74c3c';
+  icon.style.color = '#e74c3c';
+  label.textContent = 'Listening — tap again to stop';
+  isRecording = true;
+
+  speechRecognition.onresult = (e) => {
+    const text = Array.from(e.results).map(r => r[0].transcript).join('');
+    transcript.style.display = 'block';
+    transcript.textContent = '"' + text + '"';
+
+    if (e.results[0].isFinal) {
+      const q = questions[state.current];
+      state.answers[q.id] = { value: 'voice', text: text, tags: ['presence'] };
+      updateNextBtn();
+      addReflection(q, text);
+    }
+  };
+
+  speechRecognition.onerror = () => stopVoice();
+  speechRecognition.onend = () => stopVoice();
+  speechRecognition.start();
+}
+
+function stopVoice() {
+  if (speechRecognition) speechRecognition.stop();
+  isRecording = false;
+  const btn = document.getElementById('voice-btn');
+  const label = document.getElementById('voice-label');
+  const icon = document.getElementById('voice-icon');
+  if (!btn) return;
+  btn.classList.remove('recording');
+  icon.style.background = '';
+  icon.style.borderColor = '';
+  icon.style.color = '';
+  label.textContent = 'Tap to speak your answer';
+}
+
+// ══════════════════════════════════════
+// LIVE REFLECTION PANEL
+// ══════════════════════════════════════
+const reflLabels = {
+  arrival:       'What brought you here',
+  capacity:      'Available energy',
+  'where-energy':'Where attention is going',
+  'presence-gap':'Last felt fully present',
+  'showing-up':  'How you\'re showing up',
+  blocker:       'What\'s sitting behind it all',
+  'one-thing':   'What would create space',
+};
+
+function addReflection(q, answerText) {
+  const el = document.getElementById('reflections');
+  const empty = el.querySelector('.reflection-empty');
+  if (empty) empty.remove();
+
+  const id = 'refl-' + q.id;
+  const short = answerText.length > 72 ? answerText.slice(0, 72) + '…' : answerText;
+  const card = `<div class="reflection-card" id="${id}">
+    <div class="refl-topic">${reflLabels[q.id] || q.id}</div>
+    <div class="refl-answer">${short}</div>
+  </div>`;
+
+  const existing = document.getElementById(id);
+  if (existing) existing.outerHTML = card;
+  else el.insertAdjacentHTML('beforeend', card);
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function nextQ() {
+  if (state.current < questions.length - 1) {
+    state.current++;
+    renderProgress();
+    renderQuestion();
+  } else {
+    show('s-capture');
+  }
+}
+
+function prevQ() {
+  if (state.current > 0) {
+    state.current--;
+    renderProgress();
+    renderQuestion();
+  }
+}
+
+// ══════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════
+function animateRings() {
+  document.querySelectorAll('.ring-fill[data-offset]').forEach(r => {
+    r.style.strokeDashoffset = r.getAttribute('data-offset');
+  });
+}
+
+function buildResults() {
+  const tc = state.tagCounts;
+  const answers = state.answers;
+  const dominant = Object.entries(tc).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+  const top = dominant[0] || 'presence';
+  const second = dominant[1] || 'clarity';
+
+  const capVal = answers['capacity']?.value ?? 3;
+  const energyScore = Math.round((capVal / 5) * 100);
+  const distract = (tc['distracted'] || 0) + (tc['reactive'] || 0) + (tc['busy'] || 0);
+  const presenceScore = Math.max(22, Math.min(91, 82 - distract * 14 + capVal * 2));
+  const clarityScore  = Math.max(22, Math.min(90, 76 - (tc['blocked'] || 0) * 11 + (tc['intentional'] || 0) * 9));
+
+  // Headlines
+  const headlines = {
+    scattered: 'You\'re everywhere.<br><em>Let\'s find the center.</em>',
+    blocked:   'Something\'s been<br><em>sitting quietly.</em>',
+    busy:      'Busy is not<br><em>the same as present.</em>',
+    reactive:  'You\'ve been responding.<br><em>Time to choose.</em>',
+    presence:  'Here\'s what<br><em>I\'m seeing.</em>',
+    energy:    'Your energy<br><em>is telling you something.</em>',
+    relationships: 'You\'re holding<br><em>more than you show.</em>',
+    direction: 'The path is there.<br><em>The fog is temporary.</em>',
+  };
+  document.getElementById('result-headline').innerHTML = headlines[top] || headlines['presence'];
+
+  const taglines = {
+    scattered:     'You\'re not falling apart. You\'re overextended.',
+    blocked:       'Naming it was the first act of clarity.',
+    busy:          'The calendar isn\'t the measure of what matters.',
+    reactive:      'Awareness before action. Always.',
+    presence:      'This is where the work begins.',
+    energy:        'Tend to what fuels you.',
+    relationships: 'The invisible load is real.',
+    direction:     'Uncertainty is not the same as being lost.',
+  };
+  document.getElementById('result-tagline').textContent = taglines[top] || taglines['presence'];
+  document.getElementById('result-date').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+  // Meters
+  const meters = [
+    { label: 'Energy',   score: energyScore,   status: energyScore   > 65 ? 'Available'  : energyScore   > 40 ? 'Depleted'   : 'Low reserve' },
+    { label: 'Presence', score: presenceScore, status: presenceScore > 65 ? 'Grounded'   : presenceScore > 40 ? 'Stretched'  : 'Pulled away' },
+    { label: 'Clarity',  score: clarityScore,  status: clarityScore  > 65 ? 'Clear'      : clarityScore  > 40 ? 'Foggy'      : 'Clouded' },
+  ];
+
+  document.getElementById('meter-row').innerHTML = meters.map(m => {
+    const offset = Math.round(201 - (m.score / 100) * 201);
+    return `<div class="meter-card">
+      <div class="meter-ring">
+        <svg viewBox="0 0 72 72">
+          <circle class="ring-bg" cx="36" cy="36" r="32"/>
+          <circle class="ring-fill" cx="36" cy="36" r="32"
+            data-offset="${offset}" style="stroke-dashoffset:201"/>
+        </svg>
+        <div class="meter-pct">${m.score}%</div>
+      </div>
+      <div class="meter-label">${m.label}</div>
+      <div class="meter-status">${m.status}</div>
+    </div>`;
+  }).join('');
+
+  // Insight copy
+  const insightBank = {
+    scattered:     { title: 'Scattered is a signal, not a failure.', body: 'When everything feels urgent, nothing is. The fact that you noticed — and paused — is already a form of presence. The thread is there. You haven\'t lost it. You\'ve just been looking at too many things at once.' },
+    blocked:       { title: 'The thing you named is the starting point.', body: 'Most people keep circling around what\'s really there. You said it. That takes more honesty than most give themselves. The block isn\'t the problem — avoiding the block is. You\'re already past that.' },
+    busy:          { title: 'The busyness is a story. You can edit it.', body: 'Being busy and being purposeful feel identical from the inside — until you stop and ask whether the motion is taking you somewhere. You already know the answer, or you wouldn\'t be here.' },
+    reactive:      { title: 'You\'ve been responding to a world that didn\'t pause for you.', body: 'There\'s a difference between being responsive and being reactive. One is a skill. The other is a survival mode. Naming where your energy is going is the first act of reclaiming it.' },
+    relationships: { title: 'The invisible load is real, and it costs.', body: 'Managing other people\'s priorities, expectations, and energy is real work — even when it\'s invisible. What you tend to is what grows. That includes what you\'re absorbing from others.' },
+    direction:     { title: 'Uncertainty is not the same as being lost.', body: 'The gap between where you are and where you want to be isn\'t a failure of vision. It\'s the space where everything actually happens. You\'re in it. That\'s not a problem — it\'s the work.' },
+    presence:      { title: 'Presence isn\'t a personality trait. It\'s a practice.', body: 'The last time you felt fully here — you remember it. It happened when the conditions were right. The question isn\'t how to have more of those moments by accident. It\'s how to create them deliberately.' },
+    energy:        { title: 'Your energy went somewhere. Let\'s be honest about where.', body: 'What you give attention to is what gets built. Not in a resentful way — in a real way. When you track where the energy actually goes, you start to see what you\'re choosing, even when it doesn\'t feel like a choice.' },
+  };
+
+  const releaseMap = {
+    'The need to respond to everything immediately.':                           'Responsiveness is a value. Reactivity is a habit. You can honor one without performing the other — and the people around you will calibrate to the new signal you send.',
+    'A commitment or meeting that isn\'t mine to carry.':                       'Not every seat at the table needs to be yours. Releasing something you\'re holding for someone else isn\'t abandonment — it\'s honesty about what you can actually give.',
+    'The story I\'m telling myself about what I should be doing.':             '"Should" is often someone else\'s voice living in your head rent-free. The things you do from obligation rather than intention cost more than you\'re accounting for.',
+    'Performing busyness instead of choosing real focus.':                      'There\'s a version of productivity that\'s really performance. You already know which tasks feed the narrative and which ones actually move things. Trust that distinction.',
+  };
+
+  const main = insightBank[top] || insightBank['presence'];
+  const releaseText = releaseMap[answers['one-thing']?.text] || 'The thing you named — releasing it isn\'t giving up. It\'s choosing what actually matters over what just demands attention.';
+
+  const movePhrases = {
+    clarity:   'Clarity is a decision before it\'s a feeling.',
+    presence:  'You can\'t be fully present everywhere. Choose where.',
+    scattered: 'The thread is still there. One end is enough.',
+    blocked:   'The next move is smaller than you think.',
+  };
+  const moveQuote = movePhrases[second] || movePhrases[top] || 'The next right move is smaller than you think.';
+
+  document.getElementById('insights-area').innerHTML = `
+    <div class="insight">
+      <div class="insight-flag">What I see</div>
+      <div class="insight-title">${main.title}</div>
+      <div class="insight-body">${main.body}</div>
+    </div>
+    <div class="insight">
+      <div class="insight-flag">On releasing one thing</div>
+      <div class="insight-title">The space you're looking for is already available.</div>
+      <div class="insight-body">${releaseText}</div>
+    </div>
+    <div class="callout">
+      <div class="callout-flag">One thing to carry today</div>
+      <div class="callout-title">"${moveQuote}"</div>
+      <div class="callout-body">Not a list. Not a system. One move. What's the smallest, most honest thing you can do in the next hour that's actually in service of what matters to you today?</div>
+    </div>`;
+
+  const quotes = {
+    scattered:     '"Presence is not about being calm. It\'s about being honest about where you actually are."',
+    blocked:       '"The thing sitting behind everything else isn\'t a problem. It\'s a door."',
+    busy:          '"You don\'t need more hours. You need more intention with the ones you have."',
+    reactive:      '"Awareness before action. That\'s the whole practice."',
+    presence:      '"You don\'t need to do more. You need to be more present with what you\'re already doing."',
+    energy:        '"Tend to what fuels you. Everything else follows from there."',
+    relationships: '"You can\'t pour from what you\'re not tending to."',
+    direction:     '"The fog is not forever. Move anyway."',
+  };
+  document.getElementById('closing-quote').textContent = quotes[top] || quotes['presence'];
+
+  // Persist this check-in
+  saveCheckIn({ energy: energyScore, presence: presenceScore, clarity: clarityScore }, tc, top);
+}
+
+// ══════════════════════════════════════
+// CAPTURE → DATABASE SUBMIT
+// ══════════════════════════════════════
+// Point this at your deployed API server (see api/server.js).
+const API_ENDPOINT = "https://presence-vault-api.onrender.com/checkin";
+
+let captureInfo = { name: "", email: "", wantsReminder: false };
+
+function handleCaptureSave() {
+  const name  = document.getElementById('capture-name').value.trim();
+  const email = document.getElementById('capture-email').value.trim();
+  const wantsReminder = document.getElementById('capture-reminder').checked;
+
+  captureInfo = { name, email, wantsReminder };
+
+  // Build results locally regardless — the check-in always shows.
+  buildResults();
+  show('s-results');
+  setTimeout(animateRings, 400);
+  triggerQAPrompt();
+
+  // If they gave name + email, also persist to the database.
+  if (name && email) {
+    submitCheckInToDatabase(name, email);
+  }
+}
+
+async function submitCheckInToDatabase(name, email) {
+  const tc = state.tagCounts;
+  const answers = state.answers;
+  const dominant = Object.entries(tc).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+  const top = dominant[0] || 'presence';
+
+  const capVal = answers['capacity']?.value ?? 3;
+  const energyScore = Math.round((capVal / 5) * 100);
+  const distract = (tc['distracted'] || 0) + (tc['reactive'] || 0) + (tc['busy'] || 0);
+  const presenceScore = Math.max(22, Math.min(91, 82 - distract * 14 + capVal * 2));
+  const clarityScore  = Math.max(22, Math.min(90, 76 - (tc['blocked'] || 0) * 11 + (tc['intentional'] || 0) * 9));
+
+  const payload = {
+    name,
+    email,
+    submitted_at: new Date().toISOString(),
+    energy_score:    energyScore,
+    presence_score:  presenceScore,
+    clarity_score:   clarityScore,
+    top_theme:       top,
+    tag_counts:      tc,
+    answers:         Object.fromEntries(
+      Object.entries(answers).map(([qid, a]) => [qid, a?.text ?? a?.value ?? a])
+    )
+  };
+
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error("Check-in save failed:", err?.error || res.status);
+    }
+  } catch (e) {
+    // Fails silently here — the local experience already completed.
+    // The person already saw their results; a network hiccup on the
+    // background save shouldn't interrupt that.
+    console.error("Check-in save error:", e.message);
+  }
+}
+
+// ══════════════════════════════════════
+// STORAGE ENGINE
+// ══════════════════════════════════════
+const STORAGE_KEY = 'presence_vault_history';
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveCheckIn(scores, tagCounts, topTheme) {
+  const history = loadHistory();
+  history.push({
+    ts: Date.now(),
+    energy:   scores.energy,
+    presence: scores.presence,
+    clarity:  scores.clarity,
+    tags:     { ...tagCounts },
+    theme:    topTheme,
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  updateEntryStats();
+}
+
+function clearHistory() {
+  if (!confirm('Clear all check-in history? This can\'t be undone.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  updateEntryStats();
+  show('s-entry');
+}
+
+// ── Entry screen stats ──
+function updateEntryStats() {
+  const history = loadHistory();
+  if (!history.length) { document.getElementById('entry-stats').style.display = 'none'; return; }
+
+  document.getElementById('entry-stats').style.display = 'block';
+
+  // Streak — consecutive days with a check-in
+  const days = new Set(history.map(h => new Date(h.ts).toDateString()));
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    if (days.has(d.toDateString())) streak++;
+    else if (i > 0) break;
+  }
+
+  const last = history[history.length - 1];
+  const lastDate = new Date(last.ts);
+  const isToday = lastDate.toDateString() === today.toDateString();
+  const lastLabel = isToday ? 'Today' : lastDate.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+  document.getElementById('stat-streak').innerHTML =
+    `<span class="stat-num">${streak}</span><span class="stat-lbl">Day streak</span>`;
+  document.getElementById('stat-total').innerHTML =
+    `<span class="stat-num">${history.length}</span><span class="stat-lbl">Check-ins</span>`;
+  document.getElementById('stat-last').innerHTML =
+    `<span class="stat-num" style="font-size:18px;margin-top:4px;">${lastLabel}</span><span class="stat-lbl">Last check-in</span>`;
+}
+
+// ── Filter history by period ──
+function filterByPeriod(period) {
+  const history = loadHistory();
+  const now = Date.now();
+  const day  = 86400000;
+  if (period === 'today') return history.filter(h => now - h.ts < day);
+  if (period === 'week')  return history.filter(h => now - h.ts < 7 * day);
+  if (period === 'month') return history.filter(h => now - h.ts < 30 * day);
+  return history;
+}
+
+// ══════════════════════════════════════
+// HISTORY SCREEN
+// ══════════════════════════════════════
+let currentPeriod = 'today';
+
+function switchPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory(period);
+}
+
+function renderHistory(period) {
+  const data = filterByPeriod(period);
+  renderSummaryCards(data, period);
+  renderTrendChart(data, period);
+  renderTagBars(data);
+  renderLog(data);
+}
+
+function renderSummaryCards(data, period) {
+  if (!data.length) {
+    document.getElementById('history-summary').innerHTML =
+      `<p class="no-data">No check-ins ${period === 'today' ? 'today' : 'in this period'} yet.</p>`;
+    return;
+  }
+  const avg = k => Math.round(data.reduce((s,d) => s + (d[k]||0), 0) / data.length);
+  const avgE = avg('energy'), avgP = avg('presence'), avgC = avg('clarity');
+
+  // Trend arrow vs prior period
+  const all = loadHistory();
+  const periodMs = { today: 86400000, week: 604800000, month: 2592000000, all: Infinity };
+  const ms = periodMs[period] || Infinity;
+  const prior = ms < Infinity
+    ? all.filter(h => Date.now() - h.ts >= ms && Date.now() - h.ts < ms * 2)
+    : [];
+  const priorAvg = k => prior.length ? Math.round(prior.reduce((s,d) => s + (d[k]||0),0) / prior.length) : null;
+  const delta = (cur, key) => {
+    const p = priorAvg(key);
+    if (p === null) return '';
+    const d = cur - p;
+    return d > 0 ? `↑ ${d}% vs prior` : d < 0 ? `↓ ${Math.abs(d)}% vs prior` : 'Same as prior';
+  };
+
+  document.getElementById('history-summary').innerHTML = `
+    <div class="history-summary-row">
+      <div class="summary-card">
+        <div class="summary-num">${avgE}%</div>
+        <div class="summary-lbl">Avg Energy</div>
+        <div class="summary-delta">${delta(avgE,'energy') || `${data.length} check-in${data.length>1?'s':''}`}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${avgP}%</div>
+        <div class="summary-lbl">Avg Presence</div>
+        <div class="summary-delta">${delta(avgP,'presence') || 'This period'}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${avgC}%</div>
+        <div class="summary-lbl">Avg Clarity</div>
+        <div class="summary-delta">${delta(avgC,'clarity') || 'This period'}</div>
+      </div>
+    </div>`;
+}
+
+function renderTrendChart(data, period) {
+  const chart = document.getElementById('trend-chart');
+  if (!data.length) { chart.innerHTML = '<div class="trend-empty">No data yet for this period.</div>'; return; }
+
+  // Group by day
+  const byDay = {};
+  data.forEach(h => {
+    const d = new Date(h.ts).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(h.energy);
+  });
+
+  const today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const entries = Object.entries(byDay).slice(-14); // max 14 bars
+  const maxVal = 100;
+
+  chart.innerHTML = entries.map(([day, vals]) => {
+    const avg = Math.round(vals.reduce((s,v) => s+v, 0) / vals.length);
+    const h = Math.round((avg / maxVal) * 72);
+    const isToday = day === today;
+    return `<div class="trend-bar-wrap">
+      <div class="trend-bar ${isToday?'today-bar':''}" style="height:${h}px" title="${day}: ${avg}% energy"></div>
+      <div class="trend-bar-label">${day.split(' ')[1]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTagBars(data) {
+  const el = document.getElementById('tag-bars');
+  if (!data.length) { el.innerHTML = '<p class="no-data">No patterns yet.</p>'; return; }
+
+  // Tally all tags
+  const counts = {};
+  data.forEach(h => {
+    Object.entries(h.tags || {}).forEach(([tag, count]) => {
+      counts[tag] = (counts[tag] || 0) + count;
+    });
+  });
+
+  const skipTags = new Set(['capacity','intentional','grounded','present','steady','fleeting']);
+  const filtered = Object.entries(counts)
+    .filter(([t]) => !skipTags.has(t))
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 7);
+
+  if (!filtered.length) { el.innerHTML = '<p class="no-data">Not enough data yet.</p>'; return; }
+  const max = filtered[0][1];
+
+  const labelMap = {
+    scattered: 'Scattered', blocked: 'Blocked', busy: 'Busy', reactive: 'Reactive',
+    energy: 'Energy drain', clarity: 'Clarity needed', presence: 'Presence gap',
+    relationships: 'Relationships', direction: 'Direction', boundaries: 'Boundaries',
+    distracted: 'Distracted', purpose: 'Purpose', gap: 'Presence gap', depleted: 'Depleted',
+  };
+
+  el.innerHTML = filtered.map(([tag, count]) => `
+    <div class="tag-bar-row">
+      <div class="tag-bar-label">${labelMap[tag] || tag}</div>
+      <div class="tag-bar-track">
+        <div class="tag-bar-fill" style="width:${Math.round((count/max)*100)}%"></div>
+      </div>
+      <div class="tag-bar-count">${count}</div>
+    </div>`).join('');
+}
+
+function renderLog(data) {
+  const el = document.getElementById('checkin-log');
+  if (!data.length) { el.innerHTML = '<p class="no-data">No check-ins yet.</p>'; return; }
+
+  const themeLabels = {
+    scattered:'Feeling scattered', blocked:'Something blocked', busy:'Busy but stuck',
+    reactive:'Running reactive', presence:'Checking in', energy:'Low energy',
+    relationships:'Relationship weight', direction:'Seeking direction',
+  };
+
+  el.innerHTML = [...data].reverse().slice(0, 20).map(h => {
+    const d = new Date(h.ts);
+    const dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+    return `<div class="log-entry">
+      <div class="log-dot"></div>
+      <div>
+        <div class="log-date">${dateStr} · ${timeStr}</div>
+        <div class="log-theme">${themeLabels[h.theme] || 'Check-in'}</div>
+      </div>
+      <div class="log-scores">
+        <span class="log-score">E ${h.energy}%</span>
+        <span class="log-score">P ${h.presence}%</span>
+        <span class="log-score">C ${h.clarity}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// HUMAN DESIGN ENGINE
+// ══════════════════════════════════════
+const HD_KEY = 'presence_vault_hd';
+
+// ── Type determination from birth data ──
+// Simplified HD type calculation based on birth month/day patterns
+// In production this would use a full ephemeris library
+function calculateHDType(dob, timeStr, city) {
+  const d = new Date(dob);
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const hour = timeStr ? parseInt(timeStr.split(':')[0]) : 12;
+  const year = d.getFullYear();
+
+  // Derive a deterministic type from birth data
+  // Real HD uses planetary positions — this approximates distribution
+  // ~35% Generator, ~33% MG, ~20% Projector, ~8% Manifestor, ~4% Reflector
+  const seed = (year * 13 + month * 31 + day * 7 + hour * 3) % 100;
+
+  if (seed < 35) return 'Generator';
+  if (seed < 68) return 'Manifesting Generator';
+  if (seed < 88) return 'Projector';
+  if (seed < 96) return 'Manifestor';
+  return 'Reflector';
+}
+
+function calculateAuthority(dob, type) {
+  const d = new Date(dob);
+  const seed = (d.getMonth() * 17 + d.getDate() * 11) % 10;
+  const authByType = {
+    'Generator':            ['Gut feeling','Gut feeling','Emotional wave','Gut feeling','Emotional wave','Gut feeling','Gut feeling','Emotional wave','Gut feeling','Gut feeling'],
+    'Manifesting Generator':['Gut feeling','Emotional wave','Gut feeling','Gut feeling','Emotional wave','Gut feeling','Gut feeling','Gut feeling','Emotional wave','Gut feeling'],
+    'Projector':            ['Gut feeling','Emotional wave','Mental clarity','Gut feeling','Emotional wave','Mental clarity','Gut feeling','Emotional wave','Mental clarity','Gut feeling'],
+    'Manifestor':           ['Emotional wave','Gut feeling','Mental clarity','Emotional wave','Gut feeling','Emotional wave','Gut feeling','Gut feeling','Emotional wave','Gut feeling'],
+    'Reflector':            ['Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle','Lunar cycle'],
+  };
+  return (authByType[type] || authByType['Generator'])[seed];
+}
+
+function calculateProfile(dob) {
+  const d = new Date(dob);
+  const profiles = ['1/3','1/4','2/4','2/5','3/5','3/6','4/6','4/1','5/1','5/2','6/2','6/3'];
+  const idx = (d.getMonth() * 3 + d.getDate()) % profiles.length;
+  return profiles[idx];
+}
+
+// ── HD Knowledge Base — plain language ──
+const HD_TYPES = {
+  'Generator': {
+    plainName: 'The Builder',
+    tagline: 'You have the energy to sustain deep work — when it lights you up.',
+    description: 'You\'re designed for satisfying work, not just busy work. Your energy is sustainable and powerful, but only when you\'re responding to things that genuinely excite you. When you\'re doing work that doesn\'t feel right, you don\'t just get tired — you get frustrated. That frustration is information.',
+    strategy: 'Wait for things that make you light up before committing. Your gut response — a rise or fall in your body — tells you more than your thinking does.',
+    workStyle: 'Deep focus in blocks. You do your best work when you can get into a flow and stay there.',
+    energyPattern: 'High and sustainable when engaged. Depleted fast when forcing things that don\'t feel right.',
+    decisionHint: 'Your gut knows first. Notice the physical "yes" or "no" before your mind starts rationalizing.',
+    morningGuidance: 'Start with what you\'re most drawn to, not what seems most urgent.',
+  },
+  'Manifesting Generator': {
+    plainName: 'The Multi-Hyphenate',
+    tagline: 'You move fast, do many things, and need permission to skip steps.',
+    description: 'You\'re built to do multiple things well — often at once. You move faster than most, skip steps others consider essential, and often know a better way before the conventional path is finished. This isn\'t restlessness. It\'s efficiency. The challenge is that others may not keep up, and you may feel guilty for moving on before something is "done."',
+    strategy: 'Respond first, then act fast. You need the gut check before the sprint — but once you have it, trust your pace.',
+    workStyle: 'Non-linear, fast, multi-threaded. You often do your best thinking while doing something else.',
+    energyPattern: 'Bursts of intense focused energy followed by needing to completely switch tracks.',
+    decisionHint: 'Your gut + your body together. You\'ll feel a pull toward something AND feel energised by the idea of it.',
+    morningGuidance: 'Pick the one thing with the strongest pull, not the longest to-do list.',
+  },
+  'Projector': {
+    plainName: 'The Guide',
+    tagline: 'You see what others miss. The world needs to slow down to hear it.',
+    description: 'You\'re designed to guide, direct, and see systems that others can\'t. You have a natural ability to understand people and processes deeply — but you\'re not built for the same sustained output as others. Your power comes from depth of insight, not volume of work. The trap is trying to keep pace with people who are wired differently.',
+    strategy: 'Wait for the invitation before sharing your insight. When you\'re asked, your wisdom lands. When you volunteer it, it often doesn\'t.',
+    workStyle: 'Deep focus in shorter windows. Quality over quantity. Rest is not optional — it\'s strategic.',
+    energyPattern: 'Clear and powerful in focused bursts. Must rest between. Burnout is the main risk.',
+    decisionHint: 'Mental clarity comes first for you. Sleep on big decisions. Journal before committing.',
+    morningGuidance: 'Protect your first hour. Don\'t start in reaction mode — start in reflection mode.',
+  },
+  'Manifestor': {
+    plainName: 'The Initiator',
+    tagline: 'You\'re built to start things. Let others know before you move.',
+    description: 'You have a rare ability to initiate — to create things from nothing and get them moving. Most people wait for permission or opportunity. You don\'t need to. The challenge is that your independent energy can feel abrupt or disconnected to others. Informing people before you act — not asking permission, just letting them know — changes everything.',
+    strategy: 'Inform before you act. Not to get approval, but to bring people along. The resistance you feel from others drops significantly when they\'re not caught off guard.',
+    workStyle: 'Intense bursts of creation followed by genuine rest. You\'re not designed for constant output.',
+    energyPattern: 'Powerful initiating energy that needs genuine rest cycles. Push-rest-push.',
+    decisionHint: 'You know when you\'re ready to move. Trust that. Just tell someone first.',
+    morningGuidance: 'Identify the one thing you want to initiate today. Then tell someone about it before you start.',
+  },
+  'Reflector': {
+    plainName: 'The Mirror',
+    tagline: 'You feel everything. Your clarity comes from time, not speed.',
+    description: 'You\'re the rarest type, and you experience the world completely differently. You take in and amplify the energy of everyone around you — which means your environment matters more than almost anything else. A good day for you is often directly connected to the people and spaces you\'re in. You need more time than others to make decisions, and that\'s not a flaw.',
+    strategy: 'Wait a full lunar cycle (28 days) for major decisions. For daily choices, notice how you feel in different environments and with different people.',
+    workStyle: 'Highly environment-dependent. You do your best work in spaces that feel right and with people who energize you.',
+    energyPattern: 'Fluid and variable — mirrors the energy around you. Protecting your environment is energy management.',
+    decisionHint: 'Talk decisions through with different people over time. Clarity comes from the process, not the moment.',
+    morningGuidance: 'Notice your environment before anything else. If it feels off, changing it is the first task.',
+  },
+};
+
+const HD_AUTHORITIES = {
+  'Gut feeling': {
+    plain: 'Your gut decides',
+    description: 'Your body knows before your mind does. A spontaneous "yes" or "no" in your gut is more reliable than any amount of thinking it through.',
+    workHint: 'When someone asks you something, notice your instant physical response before you start thinking.',
+  },
+  'Emotional wave': {
+    plain: 'Clarity comes over time',
+    description: 'You move through emotional highs and lows, and your clearest decisions come when you\'re somewhere in the middle — not at the peak or the valley.',
+    workHint: 'Never make big commitments in the high or the low. Sleep on it. The clarity is in the middle.',
+  },
+  'Mental clarity': {
+    plain: 'Talk it through first',
+    description: 'You find clarity by processing out loud — with a trusted person or in writing. The thinking isn\'t in your head; it happens through expression.',
+    workHint: 'Before deciding, say it out loud to someone who won\'t give advice. Just talk it through.',
+  },
+  'Lunar cycle': {
+    plain: 'Time is your decision-maker',
+    description: 'You need a full lunar cycle to make major decisions. Daily check-ins matter most for noticing how your environment is affecting you.',
+    workHint: 'Track how you feel in different settings and with different people. Your environment is your biggest lever.',
+  },
+};
+
+const HD_PROFILES = {
+  '1/3': { plain: 'The Investigator', desc: 'You need to understand the foundation before you can move. Research and direct experience are your teachers.' },
+  '1/4': { plain: 'The Builder', desc: 'You build solid foundations and share them with your network. Security and relationships are your strengths.' },
+  '2/4': { plain: 'The Hermit', desc: 'You need alone time to develop your gifts, then share them with a trusted few who already know and trust you.' },
+  '2/5': { plain: 'The Hermit-Heretic', desc: 'People project great things onto you. You need solitude to develop what\'s genuinely yours versus what others expect.' },
+  '3/5': { plain: 'The Martyr', desc: 'You learn through trial and error — and your "failures" are actually your greatest teaching material for others.' },
+  '3/6': { plain: 'The Martyr-Role Model', desc: 'First half of life: learning through experience. Second half: becoming a trusted guide for others from what you\'ve lived.' },
+  '4/6': { plain: 'The Opportunist', desc: 'Your network is your net worth — in the truest sense. The right opportunities come through the right relationships.' },
+  '4/1': { plain: 'The Opportunist', desc: 'You influence through your network and need a solid personal foundation to do it from.' },
+  '5/1': { plain: 'The Heretic', desc: 'People see you as a fixer and a savior. Make sure what they\'re projecting matches what you can actually deliver.' },
+  '5/2': { plain: 'The Heretic', desc: 'You have practical solutions others need. Trust your natural gifts even when they feel effortless to you.' },
+  '6/2': { plain: 'The Role Model', desc: 'You\'re here to be an example. People are watching more than you realize — that\'s not pressure, it\'s purpose.' },
+  '6/3': { plain: 'The Role Model', desc: 'Your life is the teaching. The experiences that felt like setbacks are becoming your most valuable wisdom.' },
+};
+
+// ── HD-aware question overrides ──
+function getHDQuestions(hdProfile) {
+  if (!hdProfile) return null;
+  const type = hdProfile.type;
+  const authority = hdProfile.authority;
+
+  return {
+    capacity: {
+      nudge: hdProfile.energyPattern,
+    },
+    'where-energy': {
+      nudge: type === 'Projector'
+        ? 'You\'re not built for the same output as others. Where is your depth going today?'
+        : type === 'Reflector'
+        ? 'Your energy mirrors your environment. What\'s influencing you most right now?'
+        : 'Follow the truth, not what sounds good.',
+    },
+    'presence-gap': {
+      nudge: type === 'Projector'
+        ? 'Presence for you often comes in moments of being genuinely seen and heard.'
+        : type === 'Generator' || type === 'Manifesting Generator'
+        ? 'Presence for you often comes when you\'re in full flow on something that lights you up.'
+        : 'In a conversation, a decision, a moment of real focus.',
+    },
+    blocker: {
+      nudge: authority === 'Emotional wave'
+        ? 'You\'re in a wave right now. Notice if this is a high, a low, or somewhere in the middle.'
+        : authority === 'Gut feeling'
+        ? 'What does your gut say — before you start explaining it to yourself?'
+        : 'The thing you keep circling back to. You don\'t need to solve it — just name it.',
+    },
+    'one-thing': {
+      nudge: hdProfile.decisionHint,
+    },
+  };
+}
+
+// ── Form interaction ──
+function hdFormCheck() {
+  const dob = document.getElementById('hd-dob').value;
+  const city = document.getElementById('hd-city').value.trim();
+  const time = document.getElementById('hd-time').value;
+  const btn = document.getElementById('hd-submit-btn');
+  btn.disabled = !(dob && city.length > 2);
+
+  if (dob && city.length > 2) {
+    const type = calculateHDType(dob, time, city);
+    const info = HD_TYPES[type];
+    document.getElementById('hd-preview').style.display = 'block';
+    document.getElementById('hd-preview').innerHTML = `
+      <div class="hd-preview-type">${info.plainName} · ${type}</div>
+      <div class="hd-preview-sub">${info.tagline}</div>`;
+  }
+}
+
+function skipHD() {
+  // Clear any partial HD data and go straight to entry
+  localStorage.removeItem(HD_KEY);
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-entry').classList.add('active');
+  document.getElementById('hd-badge').style.display = 'none';
+  document.getElementById('entry-sub-text').textContent = 'Not the version of you on the calendar. The one that showed up today.';
+  updateEntryStats();
+}
+
+function submitHD() {
+  const dob = document.getElementById('hd-dob').value;
+  const time = document.getElementById('hd-time').value;
+  const city = document.getElementById('hd-city').value.trim();
+
+  const type = calculateHDType(dob, time, city);
+  const authority = calculateAuthority(dob, type);
+  const profile = calculateProfile(dob);
+  const typeInfo = HD_TYPES[type];
+  const authInfo = HD_AUTHORITIES[authority];
+  const profileInfo = HD_PROFILES[profile] || { plain: 'The Seeker', desc: 'You\'re finding your way through lived experience.' };
+
+  const hdProfile = { type, authority, profile, dob, city,
+    ...typeInfo, authInfo, profileInfo,
+    energyPattern: typeInfo.energyPattern,
+    decisionHint: typeInfo.decisionHint,
+    morningGuidance: typeInfo.morningGuidance,
+  };
+
+  localStorage.setItem(HD_KEY, JSON.stringify(hdProfile));
+  renderHDReveal(hdProfile);
+  show('s-hd-reveal');
+}
+
+function renderHDReveal(hd) {
+  document.getElementById('hd-reveal-eyebrow').textContent = `Your Design · ${hd.profile} ${hd.profileInfo.plain}`;
+  document.getElementById('hd-reveal-title').innerHTML = `You\'re a <em>${hd.plainName}.</em>`;
+
+  document.getElementById('hd-reveal-card').innerHTML = `
+    <div class="hd-reveal-desc">${hd.description}</div>
+    <div class="hd-reveal-strategy">"${hd.strategy}"</div>`;
+
+  document.getElementById('hd-pillars').innerHTML = `
+    <div class="hd-pillar">
+      <div class="hd-pillar-icon">⚡</div>
+      <div>
+        <div class="hd-pillar-label">How you decide</div>
+        <div class="hd-pillar-text"><strong>${hd.authInfo.plain}</strong> — ${hd.authInfo.description}</div>
+      </div>
+    </div>
+    <div class="hd-pillar">
+      <div class="hd-pillar-icon">◎</div>
+      <div>
+        <div class="hd-pillar-label">How you show up</div>
+        <div class="hd-pillar-text"><strong>${hd.profileInfo.plain}</strong> — ${hd.profileInfo.desc}</div>
+      </div>
+    </div>
+    <div class="hd-pillar">
+      <div class="hd-pillar-icon">↑</div>
+      <div>
+        <div class="hd-pillar-label">This morning</div>
+        <div class="hd-pillar-text">${hd.morningGuidance}</div>
+      </div>
+    </div>`;
+}
+
+function loadHDProfile() {
+  try { return JSON.parse(localStorage.getItem(HD_KEY)); }
+  catch(e) { return null; }
+}
+
+function renderHDBadge(hd) {
+  if (!hd) return;
+  const badge = document.getElementById('hd-badge');
+  badge.style.display = 'inline-flex';
+  badge.innerHTML = `<span style="opacity:0.6">⚡</span> ${hd.plainName} · ${hd.type}`;
+
+  const sub = document.getElementById('entry-sub-text');
+  if (sub) sub.textContent = hd.morningGuidance;
+}
+
+// ── Inject HD context into questions ──
+const _origRenderQuestion = renderQuestion;
+window.renderQuestion = function() {
+  _origRenderQuestion();
+  const hd = loadHDProfile();
+  if (!hd) return;
+  const overrides = getHDQuestions(hd);
+  if (!overrides) return;
+  const q = questions[state.current];
+  const override = overrides[q.id];
+  if (!override) return;
+
+  // Update nudge text with HD-personalised version
+  if (override.nudge) {
+    const nudgeEl = document.querySelector('.q-nudge');
+    if (nudgeEl) nudgeEl.textContent = override.nudge;
+  }
+
+  // Inject HD banner on authority-relevant questions
+  if (q.id === 'blocker' || q.id === 'one-thing') {
+    const area = document.getElementById('q-area');
+    const banner = document.createElement('div');
+    banner.className = 'hd-question-banner';
+    banner.textContent = hd.authInfo.workHint;
+    const choices = area.querySelector('.ans-choices');
+    if (choices) area.insertBefore(banner, choices);
+  }
+};
+
+// ── Inject HD into results ──
+const _origBuildResults = buildResults;
+window.buildResults = function() {
+  _origBuildResults();
+  const hd = loadHDProfile();
+  if (!hd) return;
+
+  // Append HD-specific insight block
+  const insightsArea = document.getElementById('insights-area');
+  if (!insightsArea) return;
+
+  const hdInsight = document.createElement('div');
+  hdInsight.className = 'insight';
+  hdInsight.innerHTML = `
+    <div class="insight-flag">Through your design · ${hd.type}</div>
+    <div class="insight-title">What this means for someone wired like you.</div>
+    <div class="insight-body">
+      ${hd.workStyle} ${hd.authInfo.description}
+      <br><br>
+      <strong>One thing to remember today:</strong> ${hd.decisionHint}
+    </div>`;
+  insightsArea.appendChild(hdInsight);
+};
+
+// ══════════════════════════════════════
+// QUALIFYING ASSESSMENT ENGINE
+// ══════════════════════════════════════
+
+const QA_QUESTIONS = [
+  {
+    id: 'qa-role',
+    label: 'How do you show up at work right now?',
+    options: [
+      { text: 'I lead a team — and I feel the weight of that daily.',      scores: { workshop: 2, retreat: 1, strategy: 1 } },
+      { text: 'I run my own thing — it\'s all on me.',                      scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'I\'m mid-level — caught between what\'s above and below me.',scores: { workshop: 3, retreat: 1, strategy: 0 } },
+      { text: 'I\'m building something but haven\'t named it yet.',         scores: { strategy: 2, retreat: 2, workshop: 0 } },
+    ]
+  },
+  {
+    id: 'qa-urgency',
+    label: 'What feels most urgent right now?',
+    options: [
+      { text: 'My team\'s culture — something is off and I can\'t name it.',scores: { workshop: 3, retreat: 0, strategy: 1 } },
+      { text: 'My own clarity — I\'ve lost the thread of what I\'m building.',scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'My energy — I\'m running on empty and something has to change.',scores: { retreat: 3, strategy: 1, workshop: 0 } },
+      { text: 'All of it — honestly, everything feels like it needs attention.',scores: { retreat: 2, strategy: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-timeline',
+    label: 'How quickly are you looking to move?',
+    options: [
+      { text: 'I need something in the next 30–60 days.',                  scores: { workshop: 2, strategy: 2, retreat: 0 } },
+      { text: 'I\'m planning 2–3 months out — I want to do it right.',     scores: { retreat: 2, strategy: 1, workshop: 1 } },
+      { text: 'I\'m still figuring out what I actually need.',              scores: { strategy: 3, retreat: 0, workshop: 0 } },
+      { text: 'I want to start a conversation and see what makes sense.',   scores: { strategy: 2, retreat: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-format',
+    label: 'What kind of experience resonates most?',
+    options: [
+      { text: 'A structured session for my team — focused, outcomes-clear.', scores: { workshop: 3, retreat: 0, strategy: 0 } },
+      { text: 'Something immersive, away from the office — space to reset.',  scores: { retreat: 3, workshop: 0, strategy: 0 } },
+      { text: 'Deep one-to-one work — someone who gets my situation fully.',  scores: { strategy: 3, retreat: 0, workshop: 0 } },
+      { text: 'I\'m open — what would you recommend for where I am?',        scores: { strategy: 2, retreat: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-blocker',
+    label: 'What\'s the real thing in the way right now?',
+    options: [
+      { text: 'I can\'t get my team aligned — it slows everything down.',  scores: { workshop: 3, retreat: 0, strategy: 1 } },
+      { text: 'I haven\'t made a decision I\'ve been sitting on for months.',scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'I\'m depleted — I can\'t lead well from where I am.',        scores: { retreat: 3, strategy: 1, workshop: 0 } },
+      { text: 'I\'m doing a lot but none of it feels like the right thing.', scores: { strategy: 2, retreat: 2, workshop: 0 } },
+    ]
+  },
+];
+
+// Offer routing
+const QA_OFFERS = {
+  retreat: {
+    label: 'Aligned & Affirmed Retreat',
+    tagline: 'You need space before strategy.',
+    note: (name) => `${name || 'Hi'} — based on what you shared in your check-in and what you just told me, I don't think more information is what you need right now. I think you need to get out of your environment entirely. Aligned & Affirmed is a small-group retreat built for exactly where you are — depleted, carrying too much, and overdue for a reset that actually goes somewhere. I'll be in touch with details. I'm glad you found this.`,
+    link: '#retreat',
+  },
+  workshop: {
+    label: 'Empowered Efficiency Workshop',
+    tagline: 'Your team needs a shared language.',
+    note: (name) => `${name || 'Hi'} — what you're describing — a team that's technically functioning but not quite connected — is the most common thing I see in the companies I work with. It's not a people problem. It's a presence problem. The Empowered Efficiency workshop is designed to give your team the language, the tools, and the honest conversation that shifts the whole dynamic. I'll reach out directly to learn more about your team before I suggest anything specific.`,
+    link: '#workshop',
+  },
+  strategy: {
+    label: '1:1 Strategy Session',
+    tagline: 'You need clarity before you need a plan.',
+    note: (name) => `${name || 'Hi'} — the fact that you know something needs to change but can't quite name what — that's actually exactly where this kind of work starts. A strategy session with me isn't about frameworks or deliverables. It's about helping you see what's already there and decide what's actually worth building next. I'll reach out to find a time that works. I'm looking forward to it.`,
+    link: '#strategy',
+  },
+};
+
+// State
+let qaScores = { retreat: 0, workshop: 0, strategy: 0 };
+let qaAnswers = {};
+let qaTimer = null;
+
+// ── Render assessment questions ──
+function renderQAQuestions() {
+  const wrap = document.getElementById('qa-questions-wrap');
+  wrap.innerHTML = QA_QUESTIONS.map(q => `
+    <div class="qa-q-block" id="qa-block-${q.id}">
+      <div class="qa-q-label">${q.label}</div>
+      <div class="qa-options">
+        ${q.options.map((opt, i) => `
+          <button class="qa-opt" onclick="selectQAOpt('${q.id}', ${i}, this)">
+            ${opt.text}
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selectQAOpt(qId, idx, btn) {
+  // Deselect siblings
+  const block = document.getElementById('qa-block-' + qId);
+  block.querySelectorAll('.qa-opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+
+  const q = QA_QUESTIONS.find(q => q.id === qId);
+  const opt = q.options[idx];
+
+  // Remove previous answer scores
+  if (qaAnswers[qId]) {
+    const prev = qaAnswers[qId].scores;
+    Object.keys(prev).forEach(k => qaScores[k] -= prev[k]);
+  }
+
+  // Add new scores
+  Object.keys(opt.scores).forEach(k => qaScores[k] += opt.scores[k]);
+  qaAnswers[qId] = { idx, scores: opt.scores };
+
+  // Show capture when all answered
+  const allAnswered = Object.keys(qaAnswers).length >= QA_QUESTIONS.length;
+  document.getElementById('qa-capture').style.display = allAnswered ? 'block' : 'none';
+  if (allAnswered) {
+    document.getElementById('qa-capture').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function qaCheckReady() {
+  const email = document.getElementById('qa-email').value.trim();
+  document.getElementById('qa-submit-btn').disabled = !email.includes('@');
+}
+
+function submitQA() {
+  const name  = document.getElementById('qa-name').value.trim();
+  const email = document.getElementById('qa-email').value.trim();
+
+  // Determine winning offer
+  const winner = Object.entries(qaScores).sort((a,b) => b[1]-a[1])[0][0];
+  const offer  = QA_OFFERS[winner];
+  const hd     = loadHDProfile();
+
+  // Build personalised note
+  const hdLine = hd
+    ? ` As a ${hd.type}, ${hd.morningGuidance.toLowerCase()}`
+    : '';
+
+  const note = offer.note(name) + (hdLine ? ` And one more thing —${hdLine}` : '');
+
+  // Submit to AWeber via hidden form POST
+  const aweberForm = document.createElement('form');
+  aweberForm.action = 'https://www.aweber.com/scripts/addlead.pl';
+  aweberForm.method = 'POST';
+  aweberForm.target = 'aweber-hidden-frame';
+  aweberForm.style.display = 'none';
+
+  const fields = {
+    meta_web_form_id:  '1237476762',
+    listname:          'awlist5424529',
+    meta_adtracking:   'Presence_Vault_Assessment',
+    meta_message:      '1',
+    meta_required:     'name,email',
+    from:              'AWeber Form Robot <robot@aweber.com>',
+    unit:              'aweber-from-presencevault',
+    name:              name,
+    email:             email,
+  };
+
+  Object.entries(fields).forEach(([k, v]) => {
+    const input = document.createElement('input');
+    input.type  = 'hidden';
+    input.name  = k;
+    input.value = v;
+    aweberForm.appendChild(input);
+  });
+
+  // Add offer tag as a custom field note
+  const noteInput = document.createElement('input');
+  noteInput.type  = 'hidden';
+  noteInput.name  = 'custom offer';
+  noteInput.value = winner;
+  aweberForm.appendChild(noteInput);
+
+  // Hidden iframe to absorb the AWeber response page
+  let iframe = document.getElementById('aweber-hidden-frame');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.name = 'aweber-hidden-frame';
+    iframe.id   = 'aweber-hidden-frame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+
+  document.body.appendChild(aweberForm);
+  aweberForm.submit();
+  document.body.removeChild(aweberForm);
+
+  // Also store locally as backup
+  const leads = JSON.parse(localStorage.getItem('pv_leads') || '[]');
+  leads.push({
+    ts: Date.now(), name, email,
+    offer: winner, scores: { ...qaScores },
+    hdType: hd?.type || null,
+    theme: state?.tagCounts ? Object.entries(state.tagCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] : null,
+  });
+  localStorage.setItem('pv_leads', JSON.stringify(leads));
+
+  // Show confirmation
+  document.getElementById('qa-phase-assess').style.display = 'none';
+  document.getElementById('qa-phase-confirm').style.display = 'block';
+  document.getElementById('qa-confirm-heading').textContent = offer.label;
+  document.getElementById('qa-confirm-note').textContent = note;
+}
+
+// ── Trigger overlay after delay on results screen ──
+function triggerQAPrompt() {
+  // Temporarily disabled — re-enable by removing this early return.
+  return;
+
+  // Don't show if already submitted this session
+  if (sessionStorage.getItem('qa_shown')) return;
+  sessionStorage.setItem('qa_shown', '1');
+
+  qaScores  = { retreat: 0, workshop: 0, strategy: 0 };
+  qaAnswers = {};
+
+  // Seed scores from Vault answers
+  const tc = state?.tagCounts || {};
+  if ((tc.scattered || 0) + (tc.busy || 0) > 1) qaScores.workshop += 1;
+  if ((tc.blocked  || 0) + (tc.direction || 0) > 0) qaScores.strategy += 1;
+  if ((tc.depleted || 0) + (tc.gap || 0) > 0)      qaScores.retreat  += 1;
+
+  renderQAQuestions();
+  document.getElementById('qa-capture').style.display = 'none';
+
+  qaTimer = setTimeout(() => {
+    const overlay = document.getElementById('qa-overlay');
+    overlay.style.display = 'flex';
+  }, 5000); // 5 seconds after results load
+}
+
+function dismissQA() {
+  const overlay = document.getElementById('qa-overlay');
+  overlay.style.display = 'none';
+  clearTimeout(qaTimer);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+greet();
+updateEntryStats();
+
+// Route first-time users to HD setup
+const hdProfile = loadHDProfile();
+if (!hdProfile) {
+  // Show HD setup as first screen
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-hd-setup').classList.add('active');
+} else {
+  renderHDBadge(hdProfile);
+}
+
+// Pre-seed demo history
+(function seedDemo() {
+  if (loadHistory().length > 0) return;
+  const now = Date.now(), day = 86400000;
+  const demos = [
+    { ts: now-13*day, energy:45, presence:38, clarity:52, tags:{scattered:1,busy:1,reactive:1}, theme:'scattered' },
+    { ts: now-11*day, energy:60, presence:55, clarity:58, tags:{blocked:1,clarity:1,energy:1},  theme:'blocked' },
+    { ts: now-9*day,  energy:35, presence:30, clarity:40, tags:{busy:2,reactive:1},             theme:'busy' },
+    { ts: now-7*day,  energy:70, presence:65, clarity:72, tags:{intentional:1,presence:1},      theme:'presence' },
+    { ts: now-5*day,  energy:55, presence:48, clarity:60, tags:{relationships:1,energy:1},      theme:'energy' },
+    { ts: now-3*day,  energy:62, presence:58, clarity:68, tags:{blocked:1,direction:1},         theme:'direction' },
+    { ts: now-1*day,  energy:50, presence:44, clarity:55, tags:{scattered:1,boundaries:1},      theme:'scattered' },
+  ];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(demos));
+  updateEntryStats();
+})();
+
+// Wire history screen
+const _origShow2 = show;
+window.show = function(id) {
+  _origShow2(id);
+  if (id === 's-entry') renderHDBadge(loadHDProfile());
+  if (id === 's-hd-reveal') { const hd = loadHDProfile(); if(hd) renderHDReveal(hd); }
+  if (id === 's-history') {
+    currentPeriod = 'today';
+    document.querySelectorAll('.period-tab').forEach((b,i) => b.classList.toggle('active', i===0));
+    renderHistory('today');
+  }
+};
+</script>
+<!-- End Presence Vault -->
+</body>
+</html>
