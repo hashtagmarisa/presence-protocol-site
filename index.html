@@ -1,0 +1,4167 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Presence Vault · Presence Protocol™</title>
+<meta name="description" content="A two-minute daily check-in for people who hold space for others. Presence as an operating system, not a wellness perk.">
+<meta property="og:title" content="The Presence Vault · Presence Protocol™">
+<meta property="og:description" content="A two-minute daily check-in for people who hold space for others. Presence as an operating system, not a wellness perk.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Be Present LLC">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body style="margin:0;padding:0;background:#f9f6f1;">
+<!-- Presence Vault · Presence Protocol™ · Be Present LLC -->
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Brand type: Times New Roman throughout, no italics. em keeps color emphasis only. */
+em, i, cite, address { font-style: normal; }
+
+:root {
+  --forest: #1b4332;
+  --forest-mid: #2d6a4f;
+  --sage: #5f9179;          /* darkened from #74a98a for AA contrast on cream */
+  --sage-light: #b7d5c3;
+  --mint-pale: #edf7f1;
+  --cream: #f9f6f1;
+  --warm: #f2ede5;
+  --ink: #1c1c1c;
+  --ink-mid: #4a4a4a;
+  --ink-light: #6b6b6b;     /* darkened from #888 for AA contrast at small sizes */
+  --border: rgba(27,67,50,0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--forest);
+  outline-offset: 2px;
+}
+
+.pv-root {
+  height: 100%;
+  background: var(--cream);
+  font-family: 'Times New Roman', Times, serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; animation: appear 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+.screen.active { display: block; }
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══ ENTRY ══ */
+.entry {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.entry::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 700px 400px at 75% 20%, rgba(116,169,138,0.08), transparent 70%),
+    radial-gradient(ellipse 400px 500px at 15% 85%, rgba(27,67,50,0.05), transparent 70%);
+  pointer-events: none;
+}
+
+.entry-inner {
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+}
+
+.entry-time {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+.entry-heading {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--forest);
+  margin-bottom: 18px;
+}
+
+.entry-heading em { font-style: normal; color: var(--forest-mid); }
+
+.entry-sub {
+  font-size: 15px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  margin-bottom: 44px;
+  max-width: 360px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 17px 40px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.25s;
+}
+.entry-btn:hover {
+  background: var(--forest-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(27,67,50,0.2);
+}
+.entry-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.entry-note {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: normal;
+}
+
+/* ══ COLD-TRAFFIC CONTEXT STRIP ══ */
+.context-strip {
+  max-width: 620px;
+  margin: 0 auto 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+.context-mark {
+  font-size: 10px;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--forest);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+.context-line {
+  font-size: 14px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.context-line strong { font-weight: 500; color: var(--forest); }
+
+.context-research {
+  font-size: 12.5px;
+  color: var(--ink-light);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 14px auto 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.context-research strong {
+  font-weight: 500;
+  color: var(--forest);
+  letter-spacing: 0.3px;
+}
+
+/* ══ CONVERSATION ══ */
+.convo-wrap {
+  min-height: calc(100vh - 120px);
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  max-width: 1080px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.convo-main {
+  padding: 60px 52px 60px 44px;
+  border-right: 1px solid var(--border);
+}
+
+.progress-track {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 52px;
+}
+
+.progress-seg {
+  height: 2px;
+  flex: 1;
+  background: #e0dbd3;
+  border-radius: 2px;
+  transition: background 0.5s ease;
+}
+.progress-seg.fill   { background: var(--forest); }
+.progress-seg.active { background: var(--sage); }
+
+.q-area { min-height: 360px; }
+
+.q-number {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 14px;
+}
+
+.q-stem {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 24px;
+  display: inline;
+}
+
+/* ── Info button: explains the METHOD, doesn't re-ask the question ── */
+.q-info-wrap { position: relative; display: inline-block; margin-left: 8px; vertical-align: middle; }
+
+.q-info-btn {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--sage);
+  background: transparent;
+  color: var(--sage);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.q-info-btn:hover, .q-info-btn[aria-expanded="true"] {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: white;
+}
+
+.q-info-pop {
+  display: none;
+  position: absolute;
+  top: 30px;
+  left: 0;
+  z-index: 20;
+  width: min(320px, 78vw);
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sage);
+  border-radius: 3px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 34px rgba(27,67,50,0.14);
+  text-align: left;
+  animation: appear 0.22s ease both;
+}
+.q-info-pop.open { display: block; }
+.q-info-pop-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.q-info-pop p {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.q-info-pop p:last-child { margin-bottom: 0; }
+.q-info-pop strong { color: var(--forest); font-weight: 500; }
+
+.q-stem-block { margin-bottom: 32px; }
+
+.q-nudge {
+  font-size: 13.5px;
+  color: var(--ink-light);
+  font-weight: 300;
+  line-height: 1.6;
+  margin-top: 12px;
+  max-width: 520px;
+}
+
+/* Choice buttons */
+.ans-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.ans-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 20px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink-mid);
+  line-height: 1.5;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.ans-btn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--sage);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.ans-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #d0cec9;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+
+.ans-btn:hover {
+  border-color: var(--sage-light);
+  background: var(--mint-pale);
+  color: var(--ink);
+}
+.ans-btn:hover .ans-dot { border-color: var(--sage); }
+.ans-btn:hover::after { transform: scaleY(1); }
+
+.ans-btn.sel {
+  border-color: var(--forest);
+  background: var(--mint-pale);
+  color: var(--forest);
+  font-weight: 400;
+}
+.ans-btn.sel::after { transform: scaleY(1); background: var(--forest); }
+.ans-btn.sel .ans-dot {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+.ans-btn.sel .ans-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+}
+
+/* ── VOICE OPTION ── */
+.voice-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+
+.voice-divider::before,
+.voice-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.voice-divider span {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  white-space: nowrap;
+}
+
+.voice-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 1px dashed rgba(27,67,50,0.2);
+  border-radius: 3px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--ink-light);
+  transition: all 0.2s;
+  margin-bottom: 28px;
+}
+
+.voice-btn:hover {
+  border-color: var(--sage);
+  color: var(--forest);
+  background: var(--mint-pale);
+}
+
+.voice-btn.recording {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: #fff8f7;
+  animation: pulse-rec 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-rec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(192,57,43,0.15); }
+  50%       { box-shadow: 0 0 0 6px rgba(192,57,43,0); }
+}
+
+.voice-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.voice-btn.recording .voice-icon {
+  background: #fff0ef;
+  border-color: #e74c3c;
+}
+
+.voice-transcript {
+  display: none;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--forest);
+  font-weight: 300;
+  font-style: normal;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  animation: appear 0.3s ease both;
+}
+
+/* Scale */
+.scale-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.scale-btn {
+  flex: 1;
+  padding: 16px 8px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 20px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+.scale-btn:hover { border-color: var(--sage); color: var(--forest); background: var(--mint-pale); }
+.scale-btn.sel { background: var(--forest); border-color: var(--forest); color: white; }
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--ink-light);
+  margin-bottom: 32px;
+}
+
+/* Nav */
+.nav-row { display: flex; align-items: center; gap: 14px; }
+
+.btn-next {
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 14px 34px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-next:hover:not(:disabled) { background: var(--forest-mid); transform: translateY(-1px); }
+.btn-next:disabled { opacity: 0.28; cursor: not-allowed; }
+
+.btn-back {
+  background: none;
+  border: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  color: var(--ink-light);
+  cursor: pointer;
+  padding: 14px 0;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.btn-back:hover { color: var(--forest); }
+
+/* ── REFLECTION PANEL ── */
+.reflection-panel {
+  padding: 44px 32px;
+  background: var(--warm);
+  position: sticky;
+  top: 69px;
+  height: calc(100vh - 69px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+.reflection-empty {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 16px;
+  font-style: normal;
+  color: var(--ink-light);
+  line-height: 1.7;
+  opacity: 0.75;
+}
+
+.reflection-card {
+  background: white;
+  border-radius: 3px;
+  padding: 18px 18px;
+  margin-bottom: 12px;
+  border-left: 3px solid var(--sage-light);
+  animation: slideIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.refl-topic {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.refl-answer {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 13px;
+  font-style: normal;
+  color: var(--ink-mid);
+  line-height: 1.55;
+}
+
+/* ── MOBILE REFLECTION BAR ── */
+/* The desktop side panel is the free-tier value. On phones it used to be
+   display:none, which meant most traffic saw nothing accumulate. This is
+   the same content as a sticky summary that expands into a sheet. */
+.refl-bar {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  width: 100%;
+  background: var(--warm);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 11px 22px;
+  text-align: left;
+  font-family: 'Times New Roman', Times, serif;
+  cursor: pointer;
+  align-items: center;
+  gap: 12px;
+}
+.refl-bar-count {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.refl-bar-last {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12.5px;
+  font-style: normal;
+  color: var(--ink-mid);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.refl-bar-chev {
+  font-size: 11px;
+  color: var(--sage);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.refl-sheet {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(27,67,50,0.45);
+  backdrop-filter: blur(2px);
+  align-items: flex-end;
+}
+.refl-sheet.open { display: flex; }
+.refl-sheet-inner {
+  background: var(--cream);
+  width: 100%;
+  max-height: 78vh;
+  overflow-y: auto;
+  border-radius: 6px 6px 0 0;
+  padding: 28px 22px 36px;
+  animation: qaSlideUp 0.35s cubic-bezier(0.22,1,0.36,1) both;
+}
+.refl-sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.refl-sheet-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--ink-light);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+
+/* ══ RESULTS ══ */
+.results-wrap { min-height: calc(100vh - 120px); }
+
+.results-header {
+  background: var(--forest);
+  padding: 64px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 600px 300px at 50% 60%, rgba(116,169,138,0.14), transparent 70%);
+  pointer-events: none;
+}
+
+.results-eyebrow {
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--sage-light);
+  font-weight: 500;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.results-headline {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 400;
+  color: white;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  position: relative;
+}
+.results-headline em { font-style: normal; color: var(--sage-light); }
+
+.results-tagline {
+  font-size: 14px;
+  color: rgba(255,255,255,0.62);
+  font-weight: 300;
+  font-style: normal;
+  position: relative;
+}
+
+.results-body {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 52px 40px 80px;
+}
+
+/* Meters */
+.meter-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+.meter-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 28px 18px 20px;
+  text-align: center;
+}
+
+.meter-ring {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 12px;
+  position: relative;
+}
+
+.meter-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.meter-ring circle { fill: none; stroke-width: 4; }
+.ring-bg { stroke: #ece8e1; }
+.ring-fill {
+  stroke: var(--forest);
+  stroke-linecap: round;
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.22,1,0.36,1);
+}
+
+.meter-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--forest);
+  margin-top: 1px;
+}
+
+.meter-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  font-weight: 500;
+}
+
+.meter-status {
+  font-size: 11px;
+  color: var(--sage);
+  margin-top: 4px;
+}
+
+.meter-note {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: normal;
+  text-align: center;
+  margin: -32px 0 44px;
+  line-height: 1.6;
+}
+
+/* Insight cards */
+.insight {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 30px;
+  margin-bottom: 14px;
+}
+
+.insight-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.insight-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 21px;
+  font-weight: 500;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.insight-body {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+/* Earned-pattern card — visually distinct from interpretive copy */
+.insight.pattern {
+  border-left: 3px solid var(--forest);
+  background: var(--mint-pale);
+}
+.insight.pattern .insight-flag { color: var(--forest-mid); }
+.pattern-stat {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  color: var(--forest);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.pattern-stat:last-child { margin-bottom: 0; }
+.pattern-basis {
+  font-size: 11px;
+  color: var(--ink-light);
+  letter-spacing: 0.4px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.callout {
+  background: var(--forest);
+  color: white;
+  border-radius: 3px;
+  padding: 32px;
+  margin-bottom: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.callout::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.callout-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage-light);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.callout-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 19px;
+  font-weight: 400;
+  font-style: normal;
+  color: white;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.callout-body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.72);
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* ── NEXT STEP (the CTA that was missing) ── */
+.next-step {
+  background: white;
+  border: 1px solid var(--sage-light);
+  border-radius: 3px;
+  padding: 34px 30px;
+  margin-top: 28px;
+  text-align: center;
+}
+.next-step-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.next-step-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+.next-step-body {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  max-width: 460px;
+  margin: 0 auto 24px;
+}
+.next-step-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.next-step-link {
+  display: inline-block;
+  text-decoration: none;
+  background: var(--forest);
+  color: white;
+  padding: 15px 30px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.next-step-link:hover { background: var(--forest-mid); transform: translateY(-1px); }
+.next-step-link.secondary {
+  background: white;
+  color: var(--forest);
+  border: 1px solid var(--border);
+}
+.next-step-link.secondary:hover { border-color: var(--sage); background: var(--mint-pale); }
+
+/* ── KEEP-MY-HISTORY ASK (fires at check-in 5) ── */
+.keep-card {
+  background: white;
+  border: 1px solid var(--sage-light);
+  border-radius: 3px;
+  padding: 32px 30px;
+  margin-top: 28px;
+}
+.keep-flag {
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.keep-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+.keep-body {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  margin-bottom: 22px;
+}
+.keep-input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 13px 16px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+}
+.keep-input:focus { border-color: var(--sage); }
+.consent-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+.consent-row input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--forest);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.consent-text {
+  font-size: 12.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.6;
+}
+.consent-text small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-light);
+  margin-top: 3px;
+  line-height: 1.55;
+}
+.keep-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.keep-later {
+  background: none;
+  border: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12.5px;
+  color: var(--ink-light);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding: 14px 4px;
+  transition: color 0.2s;
+}
+.keep-later:hover { color: var(--forest); }
+.keep-done {
+  font-size: 13px;
+  color: var(--forest);
+  font-weight: 400;
+  line-height: 1.7;
+}
+
+/* ── REMINDER ROW ── */
+.reminder-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.reminder-btn {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 22px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  color: var(--forest);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+.reminder-btn:hover { border-color: var(--sage); background: var(--mint-pale); }
+.reminder-note {
+  font-size: 11.5px;
+  color: var(--ink-light);
+  font-style: normal;
+}
+
+.results-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.btn-solid {
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 15px 32px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-solid:hover { background: var(--forest-mid); transform: translateY(-1px); }
+
+.btn-outline {
+  background: white;
+  color: var(--forest);
+  border: 1px solid var(--border);
+  padding: 15px 32px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+.btn-outline:hover { border-color: var(--sage); }
+
+.closing-line {
+  margin-top: 48px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.closing-line p {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  font-style: normal;
+  color: var(--ink-light);
+  line-height: 1.6;
+}
+.closing-line span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-top: 8px;
+  line-height: 1.65;
+}
+
+/* ══ CAPTURE ══ */
+.capture-wrap {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+}
+.capture-card {
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+}
+.capture-eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+.capture-heading {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(26px, 4vw, 34px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+.capture-sub {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.capture-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.capture-input {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.capture-input:focus { border-color: var(--sage); }
+.capture-reminder-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.5;
+  cursor: pointer;
+  margin-bottom: 24px;
+}
+.capture-reminder-label input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--forest);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.capture-privacy {
+  font-size: 11.5px;
+  color: var(--ink-light);
+  font-style: normal;
+  margin-top: 18px;
+  line-height: 1.6;
+}
+.capture-skip {
+  display: block;
+  margin: 18px auto 0;
+  background: none;
+  border: none;
+  color: var(--ink-light);
+  font-size: 12.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-family: 'Times New Roman', Times, serif;
+  line-height: 1.65;
+  transition: color 0.2s;
+}
+.capture-skip:hover { color: var(--forest); }
+
+/* ── ENTRY STATS ── */
+.entry-stat {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 20px;
+  text-align: center;
+  min-width: 100px;
+}
+.entry-stat .stat-num {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1;
+  display: block;
+}
+.entry-stat .stat-lbl {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-top: 4px;
+  display: block;
+}
+.entry-history-btn {
+  display: inline-block;
+  margin-top: 18px;
+  background: none;
+  border: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  color: var(--sage);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.entry-history-btn:hover { color: var(--forest); }
+
+/* ── PERIOD TABS ── */
+.period-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.period-tab {
+  padding: 9px 18px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.period-tab:hover { border-color: var(--sage); color: var(--forest); }
+.period-tab.active { background: var(--forest); border-color: var(--forest); color: white; }
+
+/* ── HISTORY SUMMARY ROW ── */
+.history-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.summary-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 22px 16px;
+  text-align: center;
+}
+.summary-num {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.summary-lbl {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+.summary-delta {
+  font-size: 11px;
+  color: var(--sage);
+  margin-top: 4px;
+}
+
+/* ── TREND CHART ── */
+.history-section { margin-bottom: 36px; }
+.history-section-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.trend-chart {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 20px;
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  overflow: hidden;
+}
+.trend-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.trend-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--sage-light);
+  transition: height 0.8s cubic-bezier(0.22,1,0.36,1);
+  position: relative;
+  min-height: 4px;
+  cursor: default;
+}
+.trend-bar.today-bar { background: var(--forest); }
+.trend-bar-label {
+  font-size: 9px;
+  color: var(--ink-light);
+  text-align: center;
+  white-space: nowrap;
+}
+.trend-empty {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-style: normal;
+  color: var(--ink-light);
+  text-align: center;
+  width: 100%;
+  align-self: center;
+}
+
+/* ── TAG BARS ── */
+.tag-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.tag-bar-label {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-mid);
+  width: 130px;
+  flex-shrink: 0;
+  text-transform: capitalize;
+}
+.tag-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #ece8e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tag-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--forest));
+  border-radius: 6px;
+  transition: width 1s cubic-bezier(0.22,1,0.36,1);
+}
+.tag-bar-count {
+  font-size: 11px;
+  color: var(--ink-light);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── CHECK-IN LOG ── */
+.log-entry {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+}
+.log-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sage);
+  flex-shrink: 0;
+}
+.log-date {
+  font-size: 12px;
+  color: var(--ink-mid);
+  font-weight: 400;
+}
+.log-theme {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: normal;
+}
+.log-scores {
+  display: flex;
+  gap: 8px;
+}
+.log-score {
+  font-size: 11px;
+  color: var(--forest);
+  background: var(--mint-pale);
+  padding: 3px 8px;
+  border-radius: 2px;
+  font-weight: 500;
+}
+.no-data {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  font-style: normal;
+  color: var(--ink-light);
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* ══ PRESENCE PROFILE — CALIBRATION ══ */
+.cal-wrap {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 64px 24px 80px;
+}
+.cal-intro { text-align: center; margin-bottom: 48px; }
+.cal-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.cal-heading {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(28px, 4.5vw, 42px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+.cal-heading em { font-style: normal; color: var(--forest-mid); }
+.cal-sub {
+  font-size: 14px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.75;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.cal-block { margin-bottom: 40px; }
+.cal-q-num {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+.cal-q-stem {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+.cal-q-nudge {
+  font-size: 12.5px;
+  color: var(--ink-light);
+  font-style: normal;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.cal-options { display: flex; flex-direction: column; gap: 7px; }
+.cal-opt {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 14px 18px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: var(--ink-mid);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  line-height: 1.5;
+}
+.cal-opt::before {
+  content: '';
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #d0cec9;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+.cal-opt:hover { border-color: var(--sage-light); background: var(--mint-pale); color: var(--ink); }
+.cal-opt.sel {
+  border-color: var(--forest);
+  background: var(--mint-pale);
+  color: var(--forest);
+  font-weight: 400;
+}
+.cal-opt.sel::before {
+  background: var(--forest);
+  border-color: var(--forest);
+  box-shadow: inset 0 0 0 3px white;
+}
+
+/* Optional HD disclosure */
+.hd-optional {
+  border-top: 1px solid var(--border);
+  padding-top: 28px;
+  margin-top: 8px;
+  margin-bottom: 36px;
+}
+.hd-optional summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 400;
+  list-style: none;
+  padding: 4px 0;
+}
+.hd-optional summary::-webkit-details-marker { display: none; }
+.hd-optional summary::before { content: '+ '; color: var(--sage); font-weight: 500; }
+.hd-optional[open] summary::before { content: '– '; }
+.hd-optional summary span {
+  font-weight: 300;
+  color: var(--ink-light);
+  font-style: normal;
+}
+.hd-optional-body {
+  padding-top: 16px;
+  font-size: 12.5px;
+  color: var(--ink-light);
+  font-weight: 300;
+  line-height: 1.7;
+}
+.hd-select {
+  margin-top: 14px;
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 13px 16px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+}
+.hd-select:focus { border-color: var(--sage); }
+
+.cal-footer { text-align: center; }
+.cal-skip {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12.5px;
+  color: var(--ink-light);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.cal-skip:hover { color: var(--forest); }
+
+/* ══ PROFILE REVEAL ══ */
+.profile-wrap { max-width: 620px; margin: 0 auto; padding: 72px 24px 80px; }
+.profile-label {
+  font-size: 10px;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+.profile-name {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.profile-name em { font-style: normal; color: var(--forest-mid); display: block; }
+.profile-tagline {
+  font-size: 15px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  font-style: normal;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.profile-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 28px;
+  margin-bottom: 12px;
+}
+.profile-card-body {
+  font-size: 14px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.8;
+}
+.profile-pillars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.profile-pillar {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 18px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.profile-pillar-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--forest);
+  flex-shrink: 0;
+}
+.profile-pillar-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.profile-pillar-text {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.6;
+}
+.profile-pillar-text strong { color: var(--forest); font-weight: 500; }
+
+.profile-forward {
+  background: var(--warm);
+  border-radius: 3px;
+  padding: 24px 26px;
+  margin-bottom: 32px;
+}
+.profile-forward-label {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+.profile-forward-text {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+}
+
+/* Profile badge on entry */
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--mint-pale);
+  border: 1px solid var(--sage-light);
+  border-radius: 20px;
+  padding: 6px 15px;
+  font-size: 11px;
+  color: var(--forest);
+  font-weight: 500;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+}
+
+/* Profile-aware question banner */
+.profile-banner {
+  background: var(--mint-pale);
+  border-left: 3px solid var(--sage);
+  border-radius: 0 3px 3px 0;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  font-size: 12.5px;
+  color: var(--forest);
+  font-weight: 300;
+  font-style: normal;
+  line-height: 1.6;
+}
+
+/* ══ QUALIFYING ASSESSMENT OVERLAY ══ */
+.qa-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27,67,50,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: qaFadeIn 0.4s ease both;
+}
+
+@keyframes qaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.qa-drawer {
+  background: var(--cream);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 6px 6px 0 0;
+  padding: 44px 44px 52px;
+  position: relative;
+  animation: qaSlideUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes qaSlideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.qa-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--ink-light);
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+.qa-close:hover { color: var(--forest); }
+
+.qa-eyebrow {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--sage);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.qa-heading {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 400;
+  color: var(--forest);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.qa-sub {
+  font-size: 13px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.qa-q-block { margin-bottom: 24px; }
+
+.qa-q-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.qa-options { display: flex; flex-direction: column; gap: 7px; }
+
+.qa-opt {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 11px 16px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--ink-mid);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qa-opt::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid #d0cec9;
+  flex-shrink: 0;
+  transition: all 0.18s;
+}
+
+.qa-opt:hover { border-color: var(--sage-light); background: var(--mint-pale); }
+.qa-opt.sel   { border-color: var(--forest); background: var(--mint-pale); color: var(--forest); font-weight: 400; }
+.qa-opt.sel::before { background: var(--forest); border-color: var(--forest); }
+
+.qa-capture { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+.qa-capture-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+}
+
+.qa-input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 13px 16px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 10px;
+  display: block;
+}
+.qa-input:focus { border-color: var(--sage); }
+
+.qa-submit-btn {
+  width: 100%;
+  background: var(--forest);
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.qa-submit-btn:hover:not(:disabled) { background: var(--forest-mid); }
+.qa-submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.qa-privacy {
+  font-size: 11px;
+  color: var(--ink-light);
+  font-style: normal;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.qa-confirm-wrap { text-align: center; padding: 20px 0; }
+.qa-confirm-icon { font-size: 36px; color: var(--sage); margin-bottom: 20px; }
+.qa-confirm-note {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 15px;
+  font-style: normal;
+  color: var(--ink-mid);
+  line-height: 1.75;
+  max-width: 420px;
+  margin: 16px auto 28px;
+}
+.qa-dismiss-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 12px 28px;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12px;
+  color: var(--ink-mid);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.qa-dismiss-btn:hover { border-color: var(--sage); color: var(--forest); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 720px) {
+  .convo-wrap { grid-template-columns: 1fr; }
+  .reflection-panel { display: none; }
+  .refl-bar { display: flex; }
+  .convo-main { padding: 0 0 36px; }
+  .convo-main > .progress-track,
+  .convo-main > .q-area,
+  .convo-main > .nav-row { margin-left: 22px; margin-right: 22px; }
+  .convo-main > .progress-track { margin-top: 28px; margin-bottom: 34px; }
+
+  .meter-row { grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .results-body { padding: 36px 22px 60px; }
+  .results-header { padding: 44px 22px; }
+  .cal-wrap { padding: 44px 20px 64px; }
+  .profile-wrap { padding: 48px 20px 64px; }
+  .qa-drawer { padding: 36px 24px 44px; }
+  .next-step { padding: 28px 22px; }
+}
+.pv-root { font-family: 'Times New Roman', Times, serif; width: 100%; }
+.pv-root * { box-sizing: border-box; }
+.sqs-block-code { padding: 0 !important; margin: 0 !important; }
+</style>
+<div class="pv-root">
+<div class="app">
+
+  <!-- ══ CALIBRATION — the Presence Profile ══ -->
+  <div class="screen" id="s-calibrate">
+    <div class="cal-wrap">
+      <div class="cal-intro">
+        <div class="cal-eyebrow">Presence Protocol™ · Be Present LLC</div>
+        <h1 class="cal-heading">Four questions,<br><em>then it knows you.</em></h1>
+        <p class="cal-sub">The Presence Protocol adapts to how you actually operate — how you break down, and what puts you back together. Answer once. Every check-in after this is built around your answers.</p>
+      </div>
+
+      <div id="cal-questions"></div>
+
+      <details class="hd-optional">
+        <summary>Know your Human Design? <span>Optional.</span></summary>
+        <div class="hd-optional-body">
+          If you already know your type, I'll layer it into your reflections alongside your profile. If you don't, skip it — nothing here depends on it.
+          <select class="hd-select" id="hd-self-report">
+            <option value="">Prefer not to say</option>
+            <option value="Generator">Generator</option>
+            <option value="Manifesting Generator">Manifesting Generator</option>
+            <option value="Projector">Projector</option>
+            <option value="Manifestor">Manifestor</option>
+            <option value="Reflector">Reflector</option>
+          </select>
+        </div>
+      </details>
+
+      <div class="cal-footer">
+        <button class="entry-btn" id="cal-submit" disabled onclick="submitCalibration()" style="width:100%; justify-content:center;">
+          See My Profile
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="cal-skip" onclick="skipCalibration()">Skip — just take me to the check-in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROFILE REVEAL ══ -->
+  <div class="screen" id="s-profile">
+    <div class="profile-wrap">
+      <div class="profile-label" id="profile-label">Your Presence Profile</div>
+      <h1 class="profile-name" id="profile-name"></h1>
+      <p class="profile-tagline" id="profile-tagline"></p>
+      <div class="profile-card"><div class="profile-card-body" id="profile-body"></div></div>
+      <div class="profile-pillars" id="profile-pillars"></div>
+      <div class="profile-forward">
+        <div class="profile-forward-label">What happens next</div>
+        <div class="profile-forward-text">This is the starting read, not the conclusion. After five check-ins the Vault stops describing you from your answers and starts describing you from your data — including whether what you just told me holds up.</div>
+      </div>
+      <button class="entry-btn" onclick="show('s-entry')">
+        Start My Check-In
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="entry-history-btn" onclick="show('s-calibrate')" style="display:block; margin-top:14px;">← Change my answers</button>
+    </div>
+  </div>
+
+  <!-- ══ ENTRY ══ -->
+  <div class="screen" id="s-entry">
+    <div class="entry">
+      <div class="entry-inner">
+
+        <div class="context-strip" id="context-strip">
+          <div class="context-mark">The Presence Vault</div>
+          <p class="context-line">A two-minute daily check-in for people who hold space for others. Part of the <strong>Presence Protocol™</strong> — presence treated as an operating system, not a wellness perk.</p>
+          <p class="context-research"><strong>Why this exists:</strong> Gallup's 2026 data puts workplace engagement at a record low, and the people responsible for holding a room carry the heaviest load. Presence is a measurable, trainable capacity — and this is where you start protecting it.</p>
+        </div>
+
+        <div class="entry-time" id="entry-greeting">Good morning</div>
+        <div id="profile-badge" style="display:none;" class="profile-badge"></div>
+        <h1 class="entry-heading">Where are you,<br><em>really?</em></h1>
+        <p class="entry-sub" id="entry-sub-text">Not the version of you on the calendar. The one that showed up today.</p>
+        <button class="entry-btn" onclick="startSession()">
+          Begin Check-In
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <p class="entry-note">Under 2 minutes. No typing. Your answers are saved on this device and shared anonymously with Be Present to improve the Vault.</p>
+        <div id="entry-stats" style="display:none; margin-top:32px; border-top:1px solid var(--border); padding-top:28px;">
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <div id="stat-streak" class="entry-stat"></div>
+            <div id="stat-total" class="entry-stat"></div>
+            <div id="stat-last" class="entry-stat"></div>
+          </div>
+          <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:4px;">
+            <button class="entry-history-btn" onclick="show('s-history')">View My Patterns →</button>
+            <button class="entry-history-btn" id="btn-my-profile" onclick="show('s-profile')" style="color:var(--ink-light);">My Profile ↗</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CONVERSATION ══ -->
+  <div class="screen" id="s-convo">
+    <div class="convo-wrap">
+      <div class="convo-main">
+        <button class="refl-bar" id="refl-bar" onclick="openReflSheet()">
+          <span class="refl-bar-count" id="refl-bar-count">0 of 7</span>
+          <span class="refl-bar-last" id="refl-bar-last">Your reflection builds as you answer</span>
+          <span class="refl-bar-chev">▲</span>
+        </button>
+        <div class="progress-track" id="progress-track"></div>
+        <div class="q-area" id="q-area"></div>
+        <div class="nav-row">
+          <button class="btn-back" id="btn-back" onclick="prevQ()">← Back</button>
+          <button class="btn-next" id="btn-next" disabled onclick="nextQ()">Continue</button>
+        </div>
+      </div>
+      <div class="reflection-panel">
+        <div class="panel-label">What I'm hearing</div>
+        <div id="reflections">
+          <p class="reflection-empty">Your reflection builds as you answer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOBILE REFLECTION SHEET ══ -->
+  <div class="refl-sheet" id="refl-sheet" onclick="if(event.target===this)closeReflSheet()">
+    <div class="refl-sheet-inner">
+      <div class="refl-sheet-head">
+        <div class="panel-label" style="margin-bottom:0;">What I'm hearing</div>
+        <button class="refl-sheet-close" onclick="closeReflSheet()" aria-label="Close">×</button>
+      </div>
+      <div id="refl-sheet-body"></div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div class="screen" id="s-history">
+    <div class="results-wrap">
+      <div class="results-header">
+        <div class="results-eyebrow">Your Patterns</div>
+        <div class="results-headline">What the<br><em>data says.</em></div>
+        <div class="results-tagline">Across all your check-ins.</div>
+      </div>
+      <div class="results-body">
+        <div class="period-tabs">
+          <button class="period-tab active" onclick="switchPeriod('today',this)">Today</button>
+          <button class="period-tab" onclick="switchPeriod('week',this)">This Week</button>
+          <button class="period-tab" onclick="switchPeriod('month',this)">This Month</button>
+          <button class="period-tab" onclick="switchPeriod('all',this)">All Time</button>
+        </div>
+        <div id="history-patterns"></div>
+        <div id="history-summary"></div>
+        <div class="history-section">
+          <div class="history-section-label">Energy over time</div>
+          <div id="trend-chart" class="trend-chart"></div>
+        </div>
+        <div class="history-section">
+          <div class="history-section-label">Where your attention keeps going</div>
+          <div id="tag-bars"></div>
+        </div>
+        <div class="history-section">
+          <div class="history-section-label">Check-in log</div>
+          <div id="checkin-log"></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-solid" onclick="startSession()">New Check-In</button>
+          <button class="btn-outline" onclick="show('s-entry')">← Home</button>
+          <button class="btn-outline" style="margin-left:auto;color:#a5342a;border-color:#f5c6c6;" onclick="clearHistory()">Clear History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS ══ -->
+  <div class="screen" id="s-results">
+    <div class="results-wrap">
+      <div class="results-header">
+        <div class="results-eyebrow">Your Check-In · <span id="result-date"></span></div>
+        <div class="results-headline" id="result-headline">Here's what<br><em>I'm seeing.</em></div>
+        <div class="results-tagline" id="result-tagline">Based on where you are today.</div>
+      </div>
+      <div class="results-body">
+        <div class="meter-row" id="meter-row"></div>
+        <p class="meter-note">These are a reading of today's answers, not a measurement of you. They're most useful compared against your own history, not against anyone else's.</p>
+        <div id="insights-area"></div>
+        <div id="keep-slot"></div>
+        <div class="next-step" id="next-step"></div>
+        <div class="reminder-row">
+          <button class="reminder-btn" onclick="downloadReminderICS()">Remind me tomorrow</button>
+          <span class="reminder-note">Adds one calendar event. No sign-up.</span>
+        </div>
+        <div class="results-actions">
+          <button class="btn-solid" onclick="startSession()">Check In Again</button>
+          <button class="btn-outline" onclick="show('s-entry')">← Home</button>
+          <button class="btn-outline" onclick="show('s-history')">View My Patterns →</button>
+        </div>
+        <div class="closing-line">
+          <p id="closing-quote">"You don't need to do more. You need to be more present with what you're already doing."</p>
+          <span>Be Present LLC · Marisa Cali</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ QUALIFYING ASSESSMENT OVERLAY ══ -->
+  <div id="qa-overlay" class="qa-overlay" style="display:none;">
+    <div class="qa-drawer" id="qa-drawer">
+      <button class="qa-close" onclick="dismissQA()" aria-label="Close">×</button>
+
+      <div id="qa-phase-assess">
+        <div class="qa-eyebrow">One more thing</div>
+        <div class="qa-heading">Want to know what kind of support would actually move the needle for you right now?</div>
+        <p class="qa-sub">Five quick questions. I'll tell you exactly which of my offerings fits where you are — no guessing, no generic sales page.</p>
+
+        <div id="qa-questions-wrap"></div>
+
+        <div class="qa-capture" id="qa-capture" style="display:none;">
+          <div class="qa-capture-label">Where should I send your recommendation?</div>
+          <input class="qa-input" type="text" id="qa-name" placeholder="Your first name" autocomplete="given-name">
+          <input class="qa-input" type="email" id="qa-email" placeholder="Your email address" autocomplete="email" oninput="qaCheckReady()">
+          <button class="qa-submit-btn" id="qa-submit-btn" disabled onclick="submitQA()">
+            Send My Recommendation
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <p class="qa-privacy">No spam. One relevant email. Unsubscribe any time.</p>
+        </div>
+      </div>
+
+      <div id="qa-phase-confirm" style="display:none;">
+        <div class="qa-confirm-wrap">
+          <div class="qa-confirm-icon">◎</div>
+          <div class="qa-eyebrow">From Marisa</div>
+          <div class="qa-heading" id="qa-confirm-heading">Thank you.</div>
+          <div class="qa-confirm-note" id="qa-confirm-note"></div>
+          <button class="qa-dismiss-btn" onclick="dismissQA()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<script>
+// ══════════════════════════════════════
+// CONFIG — edit these, nothing else
+// ══════════════════════════════════════
+const CONFIG = {
+  apiEndpoint:  "https://presence-vault-api.onrender.com/checkin",
+  bookingUrl:   "https://app.bepresentllc.com/widget/bookings/intention-bepresentllc",
+  brandSiteUrl: "https://bepresentllc.com",
+  enableQAPrompt: false,          // flip to true when ready for lead gen
+  qaDelayMs: 5000,
+  patternMinCheckins: 5,
+  patternMinDays: 3,
+  keepAskAtCheckin: 5,            // email ask fires on this check-in, not before
+  keepAskRepeatEvery: 5,          // and again every N after a "not now"
+};
+
+// ══════════════════════════════════════
+// DEVICE ID
+// Every completed check-in reaches the database, identified or not.
+// This is what stops the dataset skewing toward people who fill in forms.
+// ══════════════════════════════════════
+const DEVICE_KEY = 'pv_device_id';
+
+function getDeviceId() {
+  let id = null;
+  try { id = localStorage.getItem(DEVICE_KEY); } catch (e) { return 'ephemeral'; }
+  if (!id) {
+    id = (crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    try { localStorage.setItem(DEVICE_KEY, id); } catch (e) {}
+  }
+  return id;
+}
+
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
+
+// ══════════════════════════════════════
+// QUESTION BANK — all button-based, no typing
+// ══════════════════════════════════════
+const questions = [
+  {
+    id: 'arrival', number: '01',
+    stem: 'Before we go anywhere — what brought you here today?',
+    nudge: 'There\'s no wrong answer. Something made you pause.',
+    type: 'choice',
+    choices: [
+      { text: 'I feel scattered. My mind is already in five places.', tags: ['scattered','energy'] },
+      { text: 'Something\'s off and I can\'t quite name it yet.', tags: ['blocked','presence'] },
+      { text: 'I\'m tired of being busy but not actually moving forward.', tags: ['busy','clarity'] },
+      { text: 'I want to check in before the day gets away from me.', tags: ['intentional','presence'] },
+    ]
+  },
+  {
+    id: 'capacity', number: '02',
+    stem: 'How much of yourself is actually available right now?',
+    nudge: 'Not what you\'re capable of — what\'s honestly here today.',
+    type: 'scale',
+    scaleLabels: ['Running on fumes', 'Somewhere in between', 'Fully here'],
+    tags: ['energy','capacity']
+  },
+  {
+    id: 'where-energy', number: '03',
+    stem: 'Where is most of your energy actually going?',
+    nudge: 'Follow the truth, not what sounds good.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'Reacting to other people\'s priorities and urgency.', tags: ['reactive','boundaries'] },
+      { text: 'Tasks that feel productive but aren\'t moving the needle.', tags: ['busy','clarity'] },
+      { text: 'Managing relationships — people, expectations, noise.', tags: ['relationships','energy'] },
+      { text: 'Overthinking before I even begin anything.', tags: ['blocked','clarity'] },
+    ]
+  },
+  {
+    id: 'presence-gap', number: '04',
+    stem: 'When did you last feel fully present?',
+    nudge: 'In a conversation, a decision, a moment of real focus.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'Earlier today — I had a clear moment this morning.', tags: ['present','grounded'] },
+      { text: 'Yesterday, briefly — it didn\'t last long.', tags: ['presence','fleeting'] },
+      { text: 'A few days ago. It\'s been harder lately.', tags: ['presence','gap'] },
+      { text: 'Honestly, I can\'t remember the last time.', tags: ['presence','depleted'] },
+    ]
+  },
+  {
+    id: 'showing-up', number: '05',
+    stem: 'How are you showing up for the people around you right now?',
+    nudge: 'Not how you want to — how you actually are.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'Present in the room, but somewhere else in my head.', tags: ['presence','distracted'] },
+      { text: 'Responsive, but stretched too thin to really be there.', tags: ['reactive','capacity'] },
+      { text: 'Consistent — but I know there\'s more I could give.', tags: ['steady','blocked'] },
+      { text: 'Honestly? I\'m not sure they\'d say I\'m really here.', tags: ['presence','gap'] },
+    ]
+  },
+  {
+    id: 'blocker', number: '06',
+    stem: 'What\'s sitting just behind everything else right now?',
+    nudge: 'The thing you keep circling back to. You don\'t need to solve it — just name it.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'A decision I\'ve been avoiding making.', tags: ['blocked','clarity'] },
+      { text: 'A relationship or dynamic that\'s draining me quietly.', tags: ['relationships','energy'] },
+      { text: 'Uncertainty about where I\'m actually headed.', tags: ['clarity','direction'] },
+      { text: 'The gap between what I\'m doing and what I want to be building.', tags: ['busy','purpose'] },
+    ]
+  },
+  {
+    id: 'one-thing', number: '07',
+    stem: 'If you released one thing today, what would create the most space?',
+    nudge: 'The answer usually comes fast. Trust it.',
+    type: 'choice',
+    voiceEnabled: true,
+    choices: [
+      { text: 'The need to respond to everything immediately.', tags: ['boundaries','presence'] },
+      { text: 'A commitment or meeting that isn\'t mine to carry.', tags: ['energy','clarity'] },
+      { text: 'The story I\'m telling myself about what I should be doing.', tags: ['blocked','clarity'] },
+      { text: 'Performing busyness instead of choosing real focus.', tags: ['busy','presence'] },
+    ]
+  },
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let state = { current: 0, answers: {}, tagCounts: {} };
+let speechRecognition = null;
+let isRecording = false;
+
+// ══════════════════════════════════════
+// SCREEN ROUTING
+// ══════════════════════════════════════
+// Each screen gets a readable hash so the address bar reflects where you are,
+// the back/forward buttons behave, and links are shareable — all without any
+// server config on Netlify (hashes never hit the server).
+const SCREEN_HASH = {
+  's-entry':     '#/',
+  's-calibrate': '#/setup',
+  's-profile':   '#/profile',
+  's-convo':     '#/check-in',
+  's-history':   '#/patterns',
+  's-results':   '#/results',
+};
+
+function hashFor(id) { return SCREEN_HASH[id] || '#/'; }
+
+function show(id, opts) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+  document.title = TITLE_FOR[id] || DEFAULT_TITLE;
+
+  // Per-screen refresh hooks
+  if (id === 's-entry')     onEnterEntry();
+  if (id === 's-profile')   renderProfileReveal(loadProfile());
+  if (id === 's-calibrate') renderCalQuestions();
+  if (id === 's-history')   onEnterHistory();
+
+  const skipPush = opts && opts.skipPush;
+  const url = hashFor(id);
+  if (!skipPush) {
+    const histState = { pvScreen: id };
+    if (history.state && history.state.pvScreen === id) history.replaceState(histState, '', url);
+    else history.pushState(histState, '', url);
+  } else {
+    // Keep the address bar in sync without adding a history entry,
+    // preserving any existing state (e.g. the current question index).
+    history.replaceState(history.state || { pvScreen: id }, '', url);
+  }
+}
+
+const DEFAULT_TITLE = 'The Presence Vault · Presence Protocol™';
+const TITLE_FOR = {
+  's-entry':     'The Presence Vault · Presence Protocol™',
+  's-calibrate': 'Set up your profile · Presence Vault',
+  's-profile':   'Your Presence Profile · Presence Vault',
+  's-convo':     'Daily check-in · Presence Vault',
+  's-history':   'Your patterns · Presence Vault',
+  's-results':   'Your check-in · Presence Vault',
+};
+
+window.addEventListener('popstate', (e) => {
+  const st = e.state;
+  const targetId = st && st.pvScreen;
+  if (!targetId || !document.getElementById(targetId)) return;
+
+  if (targetId === 's-convo' && typeof st.pvQ === 'number') {
+    state.current = st.pvQ;
+    renderProgress();
+    renderQuestion();
+  }
+  show(targetId, { skipPush: true });
+});
+
+function onEnterEntry() {
+  renderProfileBadge(loadProfile());
+  updateEntryStats();
+}
+
+function onEnterHistory() {
+  currentPeriod = 'today';
+  document.querySelectorAll('.period-tab').forEach((b,i) => b.classList.toggle('active', i === 0));
+  renderHistory('today');
+}
+
+function greet() {
+  const h = new Date().getHours();
+  const el = document.getElementById('entry-greeting');
+  if (el) el.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+function startSession() {
+  state = { current: 0, answers: {}, tagCounts: {}, voiceNotes: {} };
+  document.getElementById('reflections').innerHTML = '<p class="reflection-empty">Your reflection builds as you answer.</p>';
+  resetReflBar();
+  renderProgress();
+  renderQuestion();
+  show('s-convo');
+  history.replaceState({ pvScreen: 's-convo', pvQ: 0 }, '', hashFor('s-convo'));
+}
+
+// ══════════════════════════════════════
+// ═══  THE PRESENCE PROFILE  ═══════════
+// ══════════════════════════════════════
+const PROFILE_KEY = 'presence_profile_v1';
+
+// Each question anchors to a remembered scene rather than asking someone
+// to generalise about themselves — recognition is far easier than recall,
+// especially for the depleted person most likely to be at the front door.
+// Bold noun first so the four options are scannable in about three seconds.
+const CAL_QUESTIONS = [
+  {
+    id: 'depletion',
+    num: '01',
+    stem: 'Think about the last time you were completely done. What went first?',
+    nudge: 'Not the whole thing. The first thing.',
+    options: [
+      { key:'clarity',  lead:'The fog',  text:'My thinking went. Reading the same line three times.' },
+      { key:'energy',   lead:'The drop', text:'My body went. I felt it before I could name it.' },
+      { key:'presence', lead:'The drift',text:'I was in the room but not really there.' },
+      { key:'patience', lead:'The edge', text:'My patience went. Small things stopped being small.' },
+    ]
+  },
+  {
+    id: 'recovery',
+    num: '02',
+    stem: 'Last time you felt like yourself again — what had you been doing?',
+    nudge: 'Whatever actually worked. Not what was supposed to.',
+    options: [
+      { key:'solitude',  lead:'Alone',              text:'Genuinely alone. Not alone with my phone.' },
+      { key:'fewpeople', lead:'With my people',     text:'Two or three specific people.' },
+      { key:'motion',    lead:'Moving',             text:'A walk, a drive, anywhere but there.' },
+      { key:'closure',   lead:'Finishing something',text:'One thing closed all the way.' },
+    ]
+  },
+  {
+    id: 'decision',
+    num: '03',
+    stem: 'Last real decision you made — how did you get to certain?',
+    nudge: 'Any decision that mattered. How did you land it?',
+    options: [
+      { key:'instant', lead:'Straight away', text:'Knew instantly, doubted it for a week.' },
+      { key:'time',    lead:'Overnight',     text:'Needed to sleep on it.' },
+      { key:'voice',   lead:'Out loud',      text:'Had to say it to someone first.' },
+      { key:'page',    lead:'On paper',      text:'Had to see it written down.' },
+    ]
+  },
+  {
+    id: 'load',
+    num: '04',
+    stem: 'What\'s the heaviest thing you\'re carrying right now?',
+    nudge: 'There\'s usually one that outweighs the rest.',
+    options: [
+      { key:'people',    lead:'Everyone else', text:'Their needs, moods, expectations.' },
+      { key:'ambiguity', lead:'Not knowing',   text:'Where this is actually headed.' },
+      { key:'volume',    lead:'The volume',    text:'None of it\'s hard. All of it\'s there.' },
+      { key:'standard',  lead:'The standard',  text:'Being the one who holds the line.' },
+    ]
+  },
+];
+
+const DEPLETION = {
+  clarity: {
+    label: 'Clarity-first',
+    metric: 'clarity',
+    short: 'clarity goes first',
+    body: 'Your thinking is the first thing to go, which makes you hard to read from the outside — you still look functional right up until the point where you\'re re-reading the same paragraph. The cost is usually paid in decisions, not in output. You keep producing; you just stop choosing well.',
+    watch: 'The tell is re-reading. When you notice it, you are already past the point where pushing harder helps.',
+    protect: 'Protect thinking time the way other people protect meetings. It is the resource that fails first, so it needs the most defended slot in your day.',
+  },
+  energy: {
+    label: 'Energy-first',
+    metric: 'energy',
+    short: 'energy goes first',
+    body: 'Your body registers depletion before your mind does. That\'s an advantage — you get an earlier warning than most people — but only if you\'re willing to treat a physical signal as real information rather than something to override.',
+    watch: 'The tell is physical and it arrives early. The risk is that you have learned to work straight through it.',
+    protect: 'Your calendar needs to account for recovery as a scheduled thing, not a gap you hope appears.',
+  },
+  presence: {
+    label: 'Presence-first',
+    metric: 'presence',
+    short: 'presence goes first',
+    body: 'You keep the energy and you keep the thinking — what you lose is being here. You can run an entire meeting from somewhere else and no one will notice. That makes this the most expensive signature to have if your work involves holding space for other people, because the loss lands on them before it lands on you.',
+    watch: 'The tell is that you can\'t recall the second half of a conversation you led.',
+    protect: 'You need a deliberate transition before anything that requires you to be genuinely present. Not more time — a marker between one thing and the next.',
+  },
+  patience: {
+    label: 'Patience-first',
+    metric: 'presence',
+    short: 'patience goes first',
+    body: 'Your regulation goes before your capability does. You can still do the work; what erodes is the margin you extend to other people while doing it. This is the signature most likely to be misread by others as a character trait rather than a capacity signal.',
+    watch: 'The tell is a disproportionate reaction to something small. It is data, not a verdict on you.',
+    protect: 'When the edge appears, the useful move is a gap before the next interaction — not an apology after it.',
+  },
+};
+
+const RECOVERY = {
+  solitude: {
+    short: 'refills in solitude',
+    body: 'You refill alone, and it has to be real solitude — not a quiet room with your phone in it. This is the recovery pattern most often sacrificed, because it looks from the outside like doing nothing.',
+    hint: 'Genuine solitude, not proximity to a screen.',
+  },
+  fewpeople: {
+    short: 'refills in close company',
+    body: 'You refill with two or three specific people. Not networking, not a crowd — the small number of people you don\'t have to perform for. The risk is that these are the first relationships to get deprioritised when you\'re busy, which is exactly backwards.',
+    hint: 'The specific people, not people in general.',
+  },
+  motion: {
+    short: 'refills in motion',
+    body: 'You refill by moving and by changing your surroundings. Sitting still to recover doesn\'t work for you and probably never has. The environment you\'re in is a bigger lever for you than for most people.',
+    hint: 'A change of scene, not a change of task.',
+  },
+  closure: {
+    short: 'refills on completion',
+    body: 'You refill by finishing. One loop closed all the way does more for you than three moved forward. The trap is a working style that keeps everything at eighty percent, which for you is a permanently open tab.',
+    hint: 'Close one thing completely. Not progress on three.',
+  },
+};
+
+const DECISION = {
+  instant: {
+    label: 'You know fast, then doubt it',
+    body: 'Your first read is usually right and your review of it usually isn\'t. The work is learning to distinguish genuine new information from ordinary second-guessing.',
+    nudge: 'Notice your first answer before you start editing it.',
+  },
+  time: {
+    label: 'You need time, not pressure',
+    body: 'Clarity arrives for you on a delay. Deciding under pressure reliably produces a worse decision, so the skill is buying the delay rather than apologising for needing it.',
+    nudge: 'If this feels urgent, check whether it actually is. It usually isn\'t.',
+  },
+  voice: {
+    label: 'You think out loud',
+    body: 'You don\'t know what you think until you\'ve said it. That means a decision made in silence is a decision made without your best instrument.',
+    nudge: 'Say this one out loud to someone who won\'t give advice.',
+  },
+  page: {
+    label: 'You think on the page',
+    body: 'You need to see it laid out. Talking it through moves too fast for you to catch the shape of the thing.',
+    nudge: 'Write this one down before you decide anything about it.',
+  },
+};
+
+const LOAD = {
+  people:    { label: 'Other people\'s weight', nudge: 'Notice how much of this is yours and how much you picked up.' },
+  ambiguity: { label: 'Not knowing the direction', nudge: 'Uncertainty is not the same as being lost. Name what you do know.' },
+  volume:    { label: 'The sheer amount', nudge: 'Volume is the load. Not difficulty — volume. Those need different responses.' },
+  standard:  { label: 'Holding the standard', nudge: 'Being the one who cares most is real work. It also isn\'t free.' },
+};
+
+// ── Calibration UI ──
+let calAnswers = {};
+
+function renderCalQuestions() {
+  const existing = loadProfile();
+  if (existing) calAnswers = { ...existing.answers };
+
+  document.getElementById('cal-questions').innerHTML = CAL_QUESTIONS.map(q => `
+    <div class="cal-block" id="cal-block-${q.id}">
+      <div class="cal-q-num">${q.num} / 04</div>
+      <div class="cal-q-stem">${q.stem}</div>
+      <div class="cal-q-nudge">${q.nudge}</div>
+      <div class="cal-options">
+        ${q.options.map((o) => `
+          <button class="cal-opt ${calAnswers[q.id] === o.key ? 'sel' : ''}"
+            onclick="selectCalOpt('${q.id}','${o.key}',this)"><span><strong style="font-weight:500;color:var(--forest);">${o.lead}</strong> — ${o.text}</span></button>`).join('')}
+      </div>
+    </div>`).join('');
+
+  if (existing && existing.hdSelfReport) {
+    const sel = document.getElementById('hd-self-report');
+    if (sel) sel.value = existing.hdSelfReport;
+  }
+  updateCalSubmit();
+}
+
+function selectCalOpt(qId, key, btn) {
+  document.getElementById('cal-block-' + qId)
+    .querySelectorAll('.cal-opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  calAnswers[qId] = key;
+  updateCalSubmit();
+}
+
+function updateCalSubmit() {
+  const complete = CAL_QUESTIONS.every(q => calAnswers[q.id]);
+  document.getElementById('cal-submit').disabled = !complete;
+}
+
+function submitCalibration() {
+  const hdSelfReport = (document.getElementById('hd-self-report') || {}).value || '';
+  const profile = buildProfile(calAnswers, hdSelfReport);
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  show('s-profile');
+}
+
+function skipCalibration() {
+  localStorage.removeItem(PROFILE_KEY);
+  show('s-entry');
+}
+
+function buildProfile(answers, hdSelfReport) {
+  const d = DEPLETION[answers.depletion];
+  const r = RECOVERY[answers.recovery];
+  return {
+    version: 1,
+    answers: { ...answers },
+    hdSelfReport: hdSelfReport || '',
+    name: `${d.label} · ${r.short}`,
+    createdAt: Date.now(),
+  };
+}
+
+function loadProfile() {
+  try { return JSON.parse(localStorage.getItem(PROFILE_KEY)); }
+  catch (e) { return null; }
+}
+
+// ── Profile reveal ──
+function renderProfileReveal(p) {
+  if (!p) return;
+  const d = DEPLETION[p.answers.depletion];
+  const r = RECOVERY[p.answers.recovery];
+  const dec = DECISION[p.answers.decision];
+  const load = LOAD[p.answers.load];
+
+  document.getElementById('profile-label').textContent =
+    'Your Presence Profile' + (p.hdSelfReport ? ` · ${p.hdSelfReport}` : '');
+  document.getElementById('profile-name').innerHTML =
+    `${d.label}<em>${r.short}.</em>`;
+  document.getElementById('profile-tagline').textContent =
+    `Under load, ${d.short}. It comes back when you ${r.short.replace('refills ', '')}.`;
+  document.getElementById('profile-body').innerHTML = `${d.body}<br><br>${r.body}`;
+
+  document.getElementById('profile-pillars').innerHTML = `
+    <div class="profile-pillar">
+      <div class="profile-pillar-mark">◎</div>
+      <div>
+        <div class="profile-pillar-label">How you decide</div>
+        <div class="profile-pillar-text"><strong>${dec.label}</strong> — ${dec.body}</div>
+      </div>
+    </div>
+    <div class="profile-pillar">
+      <div class="profile-pillar-mark">↕</div>
+      <div>
+        <div class="profile-pillar-label">What you're carrying</div>
+        <div class="profile-pillar-text"><strong>${load.label}</strong> — ${load.nudge}</div>
+      </div>
+    </div>
+    <div class="profile-pillar">
+      <div class="profile-pillar-mark">!</div>
+      <div>
+        <div class="profile-pillar-label">Your early warning</div>
+        <div class="profile-pillar-text">${d.watch}</div>
+      </div>
+    </div>
+    <div class="profile-pillar">
+      <div class="profile-pillar-mark">→</div>
+      <div>
+        <div class="profile-pillar-label">What to protect</div>
+        <div class="profile-pillar-text">${d.protect}</div>
+      </div>
+    </div>`;
+}
+
+function renderProfileBadge(p) {
+  const badge = document.getElementById('profile-badge');
+  const sub = document.getElementById('entry-sub-text');
+  const btn = document.getElementById('btn-my-profile');
+  if (!p) {
+    if (badge) badge.style.display = 'none';
+    if (btn) btn.style.display = 'none';
+    if (sub) sub.textContent = 'Not the version of you on the calendar. The one that showed up today.';
+    return;
+  }
+  const d = DEPLETION[p.answers.depletion];
+  const r = RECOVERY[p.answers.recovery];
+  badge.style.display = 'inline-flex';
+  badge.innerHTML = `<span style="opacity:0.6">◎</span> ${d.label} · ${r.short}`;
+  if (btn) btn.style.display = '';
+  if (sub) sub.textContent = r.hint;
+}
+
+// ── Profile-aware question nudges ──
+function getProfileNudges(p) {
+  if (!p) return null;
+  const d = p.answers.depletion, dec = p.answers.decision, load = p.answers.load;
+  return {
+    capacity: DEPLETION[d].watch,
+    'where-energy': LOAD[load].nudge,
+    'presence-gap': d === 'presence'
+      ? 'Presence is the thing that goes first for you. Be exact about this one.'
+      : 'In a conversation, a decision, a moment of real focus.',
+    blocker: DECISION[dec].nudge,
+    'one-thing': RECOVERY[p.answers.recovery].hint,
+  };
+}
+
+// ══════════════════════════════════════
+// PROGRESS + QUESTION RENDER
+// ══════════════════════════════════════
+function renderProgress() {
+  document.getElementById('progress-track').innerHTML =
+    questions.map((_, i) => {
+      const cls = i < state.current ? 'fill' : i === state.current ? 'active' : '';
+      return `<div class="progress-seg ${cls}"></div>`;
+    }).join('');
+}
+
+// The info button explains the METHOD and the research behind it —
+// one consistent explanation, not a re-phrasing of the question.
+const Q_INFO_HTML = `
+  <p>One tap, no typing, and phrased around <strong>how you actually are</strong> — not how you'd like to be. Recognizing a true answer takes seconds; describing yourself from scratch takes energy you may not have right now.</p>
+  <p>This isn't a mood tracker. Gallup's 2026 data puts workplace engagement at a record low, with the people responsible for holding a room carrying the heaviest load. <strong>Presence is a measurable, trainable capacity</strong> — this check-in is how you catch a drop early, and how the pattern builds over time.</p>
+`;
+
+function toggleQInfo(e) {
+  if (e) e.stopPropagation();
+  const pop = document.getElementById('q-info-pop');
+  const btn = document.getElementById('q-info-btn');
+  if (!pop || !btn) return;
+  const open = pop.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+// Close the info popover on outside click or Escape.
+document.addEventListener('click', (e) => {
+  const pop = document.getElementById('q-info-pop');
+  if (!pop || !pop.classList.contains('open')) return;
+  if (e.target.closest('.q-info-wrap')) return;
+  pop.classList.remove('open');
+  const btn = document.getElementById('q-info-btn');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const pop = document.getElementById('q-info-pop');
+  if (pop && pop.classList.contains('open')) {
+    pop.classList.remove('open');
+    const btn = document.getElementById('q-info-btn');
+    if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+  }
+});
+
+function renderQuestion() {
+  const q = questions[state.current];
+  const saved = state.answers[q.id];
+  const area = document.getElementById('q-area');
+  const profile = loadProfile();
+  const nudges = getProfileNudges(profile);
+  const nudgeText = (nudges && nudges[q.id]) || q.nudge;
+
+  let html = `
+    <div class="q-number">${q.number} / 0${questions.length}</div>
+    <div class="q-stem-block">
+      <span class="q-stem">${q.stem}</span><span class="q-info-wrap">
+        <button class="q-info-btn" id="q-info-btn" aria-expanded="false"
+          aria-label="Why we ask it this way" onclick="toggleQInfo(event)">i</button>
+        <div class="q-info-pop" id="q-info-pop" role="dialog" aria-label="Why we ask it this way">
+          <div class="q-info-pop-label">Why we ask it this way</div>
+          ${Q_INFO_HTML}
+        </div>
+      </span>
+      <div class="q-nudge">${nudgeText}</div>
+    </div>
+  `;
+
+  if (q.type === 'choice') {
+    // Profile banner on the two decision-weighted questions
+    if (profile && (q.id === 'blocker' || q.id === 'one-thing')) {
+      const dec = DECISION[profile.answers.decision];
+      html += `<div class="profile-banner">${dec.label}. ${dec.nudge}</div>`;
+    }
+
+    html += `<div class="ans-choices">
+      ${q.choices.map((c, i) => `
+        <button class="ans-btn ${saved && saved.value === i ? 'sel' : ''}"
+          onclick="selectChoice(${i})">
+          <span class="ans-dot"></span>${c.text}
+        </button>`).join('')}
+    </div>`;
+
+    if (q.voiceEnabled) {
+      html += `
+        <div class="voice-divider"><span>or say it instead</span></div>
+        <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">
+          <div class="voice-icon" id="voice-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <rect x="4.5" y="1" width="5" height="7" rx="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 7.5a5 5 0 0010 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="7" y1="12.5" x2="7" y2="10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span id="voice-label">Tap to speak your answer</span>
+        </button>
+        <div class="voice-transcript" id="voice-transcript"></div>`;
+    }
+  }
+
+  else if (q.type === 'scale') {
+    const val = saved ? saved.value : null;
+    html += `
+      <div class="scale-row">
+        ${[1,2,3,4,5].map(n => `
+          <button class="scale-btn ${val === n ? 'sel' : ''}"
+            onclick="selectScale(${n})">${n}</button>`).join('')}
+      </div>
+      <div class="scale-labels">
+        <span>${q.scaleLabels[0]}</span>
+        <span>${q.scaleLabels[1]}</span>
+        <span>${q.scaleLabels[2]}</span>
+      </div>`;
+  }
+
+  area.innerHTML = html;
+  updateNextBtn();
+  document.getElementById('btn-back').style.visibility = state.current === 0 ? 'hidden' : 'visible';
+}
+
+// ══════════════════════════════════════
+// ANSWER HANDLERS
+// ── FIX: tag counts are now derived from answers, never incremented.
+//    Changing an answer no longer double-counts.
+// ══════════════════════════════════════
+function recomputeTagCounts() {
+  const tc = {};
+  questions.forEach(q => {
+    const a = state.answers[q.id];
+    if (!a) return;
+    if (q.type === 'scale') {
+      const weight = (6 - a.value) / 5;
+      (q.tags || []).forEach(t => tc[t] = (tc[t] || 0) + weight);
+    } else {
+      (a.tags || []).forEach(t => tc[t] = (tc[t] || 0) + 1);
+    }
+  });
+  state.tagCounts = tc;
+}
+
+function selectChoice(idx) {
+  const q = questions[state.current];
+  const c = q.choices[idx];
+  const vt = (state.voiceNotes || {})[q.id];
+  state.answers[q.id] = { value: idx, text: c.text, tags: c.tags, ...(vt ? { voiceText: vt } : {}) };
+  recomputeTagCounts();
+  document.querySelectorAll('.ans-btn').forEach((b, i) => b.classList.toggle('sel', i === idx));
+  updateNextBtn();
+  addReflection(q, c.text);
+}
+
+function selectScale(n) {
+  const q = questions[state.current];
+  const vt = (state.voiceNotes || {})[q.id];
+  state.answers[q.id] = { value: n, text: `${n} out of 5`, tags: q.tags, ...(vt ? { voiceText: vt } : {}) };
+  recomputeTagCounts();
+  document.querySelectorAll('.scale-btn').forEach((b, i) => b.classList.toggle('sel', i + 1 === n));
+  updateNextBtn();
+  addReflection(q, scaleLabel(n, q.scaleLabels));
+}
+
+function scaleLabel(n, labels) {
+  if (n <= 2) return labels[0];
+  if (n === 3) return labels[1];
+  return labels[2];
+}
+
+function updateNextBtn() {
+  const q = questions[state.current];
+  const btn = document.getElementById('btn-next');
+  btn.disabled = !state.answers[q.id];
+  btn.textContent = state.current < questions.length - 1 ? 'Continue' : 'See My Reflection';
+}
+
+// ══════════════════════════════════════
+// VOICE CAPTURE
+// ── FIX: voice answers now inherit the question's tag profile
+//    instead of collapsing to a single generic tag.
+// ══════════════════════════════════════
+function toggleVoice() { isRecording ? stopVoice() : startVoice(); }
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    const label = document.getElementById('voice-label');
+    if (label) label.textContent = 'Voice isn\'t available in this browser — use the options above.';
+    return;
+  }
+
+  speechRecognition = new SR();
+  speechRecognition.continuous = false;
+  speechRecognition.interimResults = true;
+  speechRecognition.lang = 'en-US';
+
+  const btn = document.getElementById('voice-btn');
+  const label = document.getElementById('voice-label');
+  const transcript = document.getElementById('voice-transcript');
+
+  btn.classList.add('recording');
+  label.textContent = 'Listening — tap again to stop';
+  isRecording = true;
+
+  speechRecognition.onresult = (e) => {
+    const text = Array.from(e.results).map(r => r[0].transcript).join('');
+    transcript.style.display = 'block';
+    transcript.textContent = '"' + text + '"';
+
+    if (e.results[0].isFinal) {
+      const q = questions[state.current];
+      // Voice is QUALITATIVE data. It never moves the dials on its own —
+      // scoring free text would mean guessing which axis it belongs to, and
+      // that guess doesn't belong in a research dataset. But a spoken answer
+      // CAN complete a question on its own; it's just recorded with no tags.
+      state.voiceNotes = state.voiceNotes || {};
+      state.voiceNotes[q.id] = text;
+
+      if (state.answers[q.id]) {
+        // Already tapped an option — transcript rides along with the score.
+        state.answers[q.id].voiceText = text;
+      } else {
+        // Voice-only: record it so the question counts, with empty tags so
+        // it contributes nothing to the score.
+        state.answers[q.id] = { value: 'voice', text: text, tags: [], voiceText: text, voiceOnly: true };
+        recomputeTagCounts();
+      }
+
+      addReflection(q, text);
+      updateNextBtn();
+
+      const label = document.getElementById('voice-label');
+      if (label) {
+        label.textContent = state.answers[q.id] && state.answers[q.id].voiceOnly
+          ? 'Saved. You can continue — or tap an option above to add a score.'
+          : 'Saved alongside your answer.';
+      }
+    }
+  };
+
+  speechRecognition.onerror = () => stopVoice();
+  speechRecognition.onend = () => stopVoice();
+  speechRecognition.start();
+}
+
+function stopVoice() {
+  if (speechRecognition) speechRecognition.stop();
+  isRecording = false;
+  const btn = document.getElementById('voice-btn');
+  const label = document.getElementById('voice-label');
+  if (!btn) return;
+  btn.classList.remove('recording');
+  label.textContent = 'Tap to speak your answer';
+}
+
+// ══════════════════════════════════════
+// LIVE REFLECTION PANEL
+// ══════════════════════════════════════
+const reflLabels = {
+  arrival:        'What brought you here',
+  capacity:       'Available energy',
+  'where-energy': 'Where attention is going',
+  'presence-gap': 'Last felt fully present',
+  'showing-up':   'How you\'re showing up',
+  blocker:        'What\'s sitting behind it all',
+  'one-thing':    'What would create space',
+};
+
+function addReflection(q, answerText) {
+  const el = document.getElementById('reflections');
+  const empty = el.querySelector('.reflection-empty');
+  if (empty) empty.remove();
+
+  const id = 'refl-' + q.id;
+  const short = answerText.length > 72 ? answerText.slice(0, 72) + '…' : answerText;
+  const card = `<div class="reflection-card" id="${id}">
+    <div class="refl-topic">${reflLabels[q.id] || q.id}</div>
+    <div class="refl-answer">${escapeHTML(short)}</div>
+  </div>`;
+
+  const existing = document.getElementById(id);
+  if (existing) existing.outerHTML = card;
+  else el.insertAdjacentHTML('beforeend', card);
+
+  syncReflBar(answerText);
+}
+
+// ── Mobile mirror of the reflection panel ──
+function syncReflBar(lastText) {
+  const answered = Object.keys(state.answers).length;
+  const countEl = document.getElementById('refl-bar-count');
+  const lastEl  = document.getElementById('refl-bar-last');
+  if (countEl) countEl.textContent = `${answered} of ${questions.length}`;
+  if (lastEl && lastText) lastEl.textContent = lastText;
+}
+
+function resetReflBar() {
+  const countEl = document.getElementById('refl-bar-count');
+  const lastEl  = document.getElementById('refl-bar-last');
+  if (countEl) countEl.textContent = `0 of ${questions.length}`;
+  if (lastEl)  lastEl.textContent = 'Your reflection builds as you answer';
+}
+
+function openReflSheet() {
+  const body = document.getElementById('refl-sheet-body');
+  const panel = document.getElementById('reflections');
+  body.innerHTML = panel ? panel.innerHTML : '';
+  document.getElementById('refl-sheet').classList.add('open');
+}
+
+function closeReflSheet() {
+  document.getElementById('refl-sheet').classList.remove('open');
+}
+
+function escapeHTML(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function nextQ() {
+  if (state.current < questions.length - 1) {
+    state.current++;
+    renderProgress();
+    renderQuestion();
+    history.pushState({ pvScreen: 's-convo', pvQ: state.current }, '', hashFor('s-convo'));
+  } else {
+    finishCheckIn();
+  }
+}
+
+// Results always show. Nothing is withheld, nothing is asked for here.
+function finishCheckIn() {
+  const scores = computeScores();
+  buildResults(scores);
+  show('s-results');
+  setTimeout(animateRings, 400);
+  submitCheckInToDatabase(scores);
+  triggerQAPrompt();
+}
+
+function prevQ() {
+  if (history.state && typeof history.state.pvQ === 'number' && history.state.pvQ > 0) {
+    history.back();
+  } else if (state.current > 0) {
+    state.current--;
+    renderProgress();
+    renderQuestion();
+  }
+}
+
+// ══════════════════════════════════════
+// SCORING
+// ── FIX: computed once, here. Display and database read the same object.
+// ══════════════════════════════════════
+function computeScores() {
+  const tc = state.tagCounts;
+  const capVal = state.answers['capacity'] ? state.answers['capacity'].value : 3;
+  const cap = typeof capVal === 'number' ? capVal : 3;
+
+  const energy = Math.round((cap / 5) * 100);
+  const distract = (tc['distracted'] || 0) + (tc['reactive'] || 0) + (tc['busy'] || 0);
+  const presence = Math.max(22, Math.min(91, Math.round(82 - distract * 14 + cap * 2)));
+  const clarity  = Math.max(22, Math.min(90, Math.round(
+    76 - (tc['blocked'] || 0) * 11 - (tc['scattered'] || 0) * 8 + (tc['intentional'] || 0) * 9 + (tc['grounded'] || 0) * 6
+  )));
+
+  const dominant = Object.entries(tc).sort((a, b) => b[1] - a[1]).map(e => e[0]);
+  return {
+    energy, presence, clarity,
+    top: dominant[0] || 'presence',
+    second: dominant[1] || 'clarity',
+    tagCounts: tc,
+  };
+}
+
+function animateRings() {
+  document.querySelectorAll('.ring-fill[data-offset]').forEach(r => {
+    r.style.strokeDashoffset = r.getAttribute('data-offset');
+  });
+}
+
+// ══════════════════════════════════════
+// RESULTS
+// ══════════════════════════════════════
+const HEADLINES = {
+  scattered:     'You\'re everywhere.<br><em>Let\'s find the center.</em>',
+  blocked:       'Something\'s been<br><em>sitting quietly.</em>',
+  busy:          'Busy is not<br><em>the same as present.</em>',
+  reactive:      'You\'ve been responding.<br><em>Time to choose.</em>',
+  presence:      'Here\'s what<br><em>I\'m seeing.</em>',
+  energy:        'Your energy<br><em>is telling you something.</em>',
+  relationships: 'You\'re holding<br><em>more than you show.</em>',
+  direction:     'The path is there.<br><em>The fog is temporary.</em>',
+};
+
+const TAGLINES = {
+  scattered:     'You\'re not falling apart. You\'re overextended.',
+  blocked:       'Naming it was the first act of clarity.',
+  busy:          'The calendar isn\'t the measure of what matters.',
+  reactive:      'Awareness before action. Always.',
+  presence:      'This is where the work begins.',
+  energy:        'Tend to what fuels you.',
+  relationships: 'The invisible load is real.',
+  direction:     'Uncertainty is not the same as being lost.',
+};
+
+const INSIGHTS = {
+  scattered:     { title: 'Scattered is a signal, not a failure.', body: 'When everything feels urgent, nothing is. The fact that you noticed — and paused — is already a form of presence. The thread is there. You haven\'t lost it. You\'ve just been looking at too many things at once.' },
+  blocked:       { title: 'The thing you named is the starting point.', body: 'Most people keep circling around what\'s really there. You said it. That takes more honesty than most give themselves. The block isn\'t the problem — avoiding the block is. You\'re already past that.' },
+  busy:          { title: 'The busyness is a story. You can edit it.', body: 'Being busy and being purposeful feel identical from the inside — until you stop and ask whether the motion is taking you somewhere. You already know the answer, or you wouldn\'t be here.' },
+  reactive:      { title: 'You\'ve been responding to a world that didn\'t pause for you.', body: 'There\'s a difference between being responsive and being reactive. One is a skill. The other is a survival mode. Naming where your energy is going is the first act of reclaiming it.' },
+  relationships: { title: 'The invisible load is real, and it costs.', body: 'Managing other people\'s priorities, expectations, and energy is real work — even when it\'s invisible. What you tend to is what grows. That includes what you\'re absorbing from others.' },
+  direction:     { title: 'Uncertainty is not the same as being lost.', body: 'The gap between where you are and where you want to be isn\'t a failure of vision. It\'s the space where everything actually happens. You\'re in it. That\'s not a problem — it\'s the work.' },
+  presence:      { title: 'Presence isn\'t a personality trait. It\'s a practice.', body: 'The last time you felt fully here — you remember it. It happened when the conditions were right. The question isn\'t how to have more of those moments by accident. It\'s how to create them deliberately.' },
+  energy:        { title: 'Your energy went somewhere. Let\'s be honest about where.', body: 'What you give attention to is what gets built. Not in a resentful way — in a real way. When you track where the energy actually goes, you start to see what you\'re choosing, even when it doesn\'t feel like a choice.' },
+};
+
+const RELEASE_MAP = {
+  'The need to respond to everything immediately.':               'Responsiveness is a value. Reactivity is a habit. You can honor one without performing the other — and the people around you will calibrate to the new signal you send.',
+  'A commitment or meeting that isn\'t mine to carry.':           'Not every seat at the table needs to be yours. Releasing something you\'re holding for someone else isn\'t abandonment — it\'s honesty about what you can actually give.',
+  'The story I\'m telling myself about what I should be doing.':  '"Should" is often someone else\'s voice living in your head rent-free. The things you do from obligation rather than intention cost more than you\'re accounting for.',
+  'Performing busyness instead of choosing real focus.':          'There\'s a version of productivity that\'s really performance. You already know which tasks feed the narrative and which ones actually move things. Trust that distinction.',
+};
+
+const MOVE_PHRASES = {
+  clarity:   'Clarity is a decision before it\'s a feeling.',
+  presence:  'You can\'t be fully present everywhere. Choose where.',
+  scattered: 'The thread is still there. One end is enough.',
+  blocked:   'The next move is smaller than you think.',
+};
+
+const QUOTES = {
+  scattered:     '"Presence is not about being calm. It\'s about being honest about where you actually are."',
+  blocked:       '"The thing sitting behind everything else isn\'t a problem. It\'s a door."',
+  busy:          '"You don\'t need more hours. You need more intention with the ones you have."',
+  reactive:      '"Awareness before action. That\'s the whole practice."',
+  presence:      '"You don\'t need to do more. You need to be more present with what you\'re already doing."',
+  energy:        '"Tend to what fuels you. Everything else follows from there."',
+  relationships: '"You can\'t pour from what you\'re not tending to."',
+  direction:     '"The fog is not forever. Move anyway."',
+};
+
+function buildResults(scores) {
+  const s = scores || computeScores();
+  const answers = state.answers;
+  const profile = loadProfile();
+
+  document.getElementById('result-headline').innerHTML = HEADLINES[s.top] || HEADLINES.presence;
+  document.getElementById('result-tagline').textContent = TAGLINES[s.top] || TAGLINES.presence;
+  document.getElementById('result-date').textContent =
+    new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+  // Meters
+  const meters = [
+    { label: 'Energy',   score: s.energy,   status: s.energy   > 65 ? 'Available' : s.energy   > 40 ? 'Depleted'  : 'Low reserve' },
+    { label: 'Presence', score: s.presence, status: s.presence > 65 ? 'Grounded'  : s.presence > 40 ? 'Stretched' : 'Pulled away' },
+    { label: 'Clarity',  score: s.clarity,  status: s.clarity  > 65 ? 'Clear'     : s.clarity  > 40 ? 'Foggy'     : 'Clouded' },
+  ];
+  document.getElementById('meter-row').innerHTML = meters.map(m => {
+    const offset = Math.round(201 - (m.score / 100) * 201);
+    return `<div class="meter-card">
+      <div class="meter-ring">
+        <svg viewBox="0 0 72 72" role="img" aria-label="${m.label}: ${m.score} percent">
+          <circle class="ring-bg" cx="36" cy="36" r="32"/>
+          <circle class="ring-fill" cx="36" cy="36" r="32" data-offset="${offset}" style="stroke-dashoffset:201"/>
+        </svg>
+        <div class="meter-pct">${m.score}%</div>
+      </div>
+      <div class="meter-label">${m.label}</div>
+      <div class="meter-status">${m.status}</div>
+    </div>`;
+  }).join('');
+
+  const main = INSIGHTS[s.top] || INSIGHTS.presence;
+  const oneThing = answers['one-thing'] ? answers['one-thing'].text : '';
+  const releaseText = RELEASE_MAP[oneThing] ||
+    'The thing you named — releasing it isn\'t giving up. It\'s choosing what actually matters over what just demands attention.';
+  const moveQuote = MOVE_PHRASES[s.second] || MOVE_PHRASES[s.top] || 'The next right move is smaller than you think.';
+
+  let html = `
+    <div class="insight">
+      <div class="insight-flag">What I see</div>
+      <div class="insight-title">${main.title}</div>
+      <div class="insight-body">${main.body}</div>
+    </div>
+    <div class="insight">
+      <div class="insight-flag">On releasing one thing</div>
+      <div class="insight-title">The space you're looking for is already available.</div>
+      <div class="insight-body">${releaseText}</div>
+    </div>`;
+
+  // ── Profile-specific block ──
+  if (profile) {
+    const d = DEPLETION[profile.answers.depletion];
+    const r = RECOVERY[profile.answers.recovery];
+    const dec = DECISION[profile.answers.decision];
+    const measured = { energy: s.energy, presence: s.presence, clarity: s.clarity };
+    const lowestToday = Object.entries(measured).sort((a,b) => a[1] - b[1])[0][0];
+    const declared = d.metric;
+
+    const alignment = lowestToday === declared
+      ? `Today matches your profile — ${declared} is your lowest score, which is exactly what you said goes first.`
+      : `Today doesn't match your profile. You said ${d.short}, but ${lowestToday} is your lowest score right now. One check-in isn't a pattern, but it's worth noticing.`;
+
+    html += `
+      <div class="insight">
+        <div class="insight-flag">Through your profile · ${d.label}</div>
+        <div class="insight-title">What this means for how you're built.</div>
+        <div class="insight-body">
+          ${alignment}
+          <br><br>${r.body}
+          <br><br><strong>One thing to carry:</strong> ${dec.nudge}
+          ${profile.hdSelfReport ? `<br><br><em>You told me you're a ${profile.hdSelfReport} — worth reading this alongside your strategy and authority.</em>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // ── Earned pattern block ──
+  const patterns = detectPatterns(loadHistory(), profile);
+  if (patterns.ready && patterns.findings.length) {
+    html += `
+      <div class="insight pattern">
+        <div class="insight-flag">What your data says</div>
+        ${patterns.findings.map(f => `<div class="pattern-stat">${f}</div>`).join('')}
+        <div class="pattern-basis">${patterns.basis}</div>
+      </div>`;
+  }
+
+  html += `
+    <div class="callout">
+      <div class="callout-flag">One thing to carry today</div>
+      <div class="callout-title">"${moveQuote}"</div>
+      <div class="callout-body">Not a list. Not a system. One move. What's the smallest, most honest thing you can do in the next hour that's actually in service of what matters to you today?</div>
+    </div>`;
+
+  document.getElementById('insights-area').innerHTML = html;
+  document.getElementById('closing-quote').textContent = QUOTES[s.top] || QUOTES.presence;
+
+  renderNextStep(s, profile, patterns);
+  saveCheckIn(s, profile);
+  renderKeepAsk();   // after saveCheckIn, so the count includes today
+}
+
+// ── The CTA that was previously missing entirely ──
+const NEXT_STEP_COPY = {
+  depleted: {
+    title: 'You\'re running on reserve. That doesn\'t resolve on its own.',
+    body: 'What you described today isn\'t a scheduling problem, and more information won\'t fix it. If you want to talk through what an actual reset would look like, that conversation is free and it\'s twenty minutes.',
+    cta: 'Book a conversation',
+  },
+  scattered: {
+    title: 'Scattered usually means too many things are yours.',
+    body: 'The Presence Protocol exists for exactly this — people who hold space for everyone else and have no system for their own capacity. If you want to see what that looks like applied to your situation, start with a conversation.',
+    cta: 'Book a conversation',
+  },
+  team: {
+    title: 'If this is true for you, it\'s probably true for your team.',
+    body: 'What you described is rarely one person\'s problem. The Presence Protocol runs as a team format too — same instrument, aggregate view, no individual data exposed to anyone.',
+    cta: 'Talk about your team',
+  },
+  general: {
+    title: 'This is the check-in. The Protocol is the rest.',
+    body: 'The Vault is one piece of a larger system — retreats, workshops, and 1:1 work built around presence as a professional skill rather than a wellness add-on.',
+    cta: 'Book a conversation',
+  },
+};
+
+function renderNextStep(s, profile, patterns) {
+  const tc = s.tagCounts;
+  let key = 'general';
+  if (s.energy <= 40 || (tc.depleted || 0) > 0) key = 'depleted';
+  else if ((tc.scattered || 0) + (tc.busy || 0) >= 2) key = 'scattered';
+  else if ((tc.relationships || 0) + (tc.boundaries || 0) >= 2) key = 'team';
+
+  const c = NEXT_STEP_COPY[key];
+  document.getElementById('next-step').innerHTML = `
+    <div class="next-step-flag">Where this goes next</div>
+    <div class="next-step-title">${c.title}</div>
+    <p class="next-step-body">${c.body}</p>
+    <div class="next-step-actions">
+      <a class="next-step-link" href="${CONFIG.bookingUrl}" target="_blank" rel="noopener">${c.cta}</a>
+      <a class="next-step-link secondary" href="${CONFIG.brandSiteUrl}" target="_blank" rel="noopener">About the Protocol</a>
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// EARNED PATTERN DETECTION
+// Only speaks when it has grounds to. Below threshold it says so.
+// ══════════════════════════════════════
+function detectPatterns(history, profile) {
+  const out = { ready: false, findings: [], basis: '', shortfall: '' };
+  if (!history || !history.length) {
+    out.shortfall = 'No check-ins recorded yet.';
+    return out;
+  }
+
+  const days = new Set(history.map(h => new Date(h.ts).toDateString()));
+  if (history.length < CONFIG.patternMinCheckins || days.size < CONFIG.patternMinDays) {
+    const need = Math.max(0, CONFIG.patternMinCheckins - history.length);
+    out.shortfall = need > 0
+      ? `${need} more check-in${need === 1 ? '' : 's'} before patterns become meaningful.`
+      : `Check in across a few more days before patterns become meaningful.`;
+    return out;
+  }
+
+  out.ready = true;
+  const n = history.length;
+
+  // 1. Signature confirmation — the strongest finding available
+  if (profile) {
+    const declared = DEPLETION[profile.answers.depletion].metric;
+    const tally = { energy: 0, presence: 0, clarity: 0 };
+    history.forEach(h => {
+      const lowest = Object.entries({ energy: h.energy, presence: h.presence, clarity: h.clarity })
+        .sort((a,b) => a[1] - b[1])[0][0];
+      tally[lowest]++;
+    });
+    const measured = Object.entries(tally).sort((a,b) => b[1] - a[1])[0];
+    const [measuredKey, measuredCount] = measured;
+
+    if (measuredKey === declared) {
+      out.findings.push(
+        `You said ${DEPLETION[profile.answers.depletion].short}. Your data agrees — ${measuredKey} is your lowest score in ${measuredCount} of ${n} check-ins.`
+      );
+    } else if (measuredCount / n >= 0.5) {
+      out.findings.push(
+        `You said ${DEPLETION[profile.answers.depletion].short}. Your data says ${measuredKey} does — it's your lowest score in ${measuredCount} of ${n} check-ins. Worth sitting with.`
+      );
+    }
+  }
+
+  // 2. Recurring drain
+  const tagTotals = {};
+  history.forEach(h => Object.entries(h.tags || {}).forEach(([t, c]) => {
+    tagTotals[t] = (tagTotals[t] || 0) + c;
+  }));
+  const skip = new Set(['capacity','intentional','grounded','present','steady','fleeting','presence','clarity','energy']);
+  const topTag = Object.entries(tagTotals).filter(([t]) => !skip.has(t)).sort((a,b) => b[1] - a[1])[0];
+  if (topTag) {
+    const appearances = history.filter(h => (h.tags || {})[topTag[0]]).length;
+    if (appearances >= 3) {
+      out.findings.push(
+        `"${TAG_LABELS[topTag[0]] || topTag[0]}" has come up in ${appearances} of your last ${n} check-ins. It is the most consistent thing in your data.`
+      );
+    }
+  }
+
+  // 3. Weekday pattern — needs more evidence than the others
+  if (n >= 8) {
+    const byDow = {};
+    history.forEach(h => {
+      const dow = new Date(h.ts).getDay();
+      (byDow[dow] = byDow[dow] || []).push(h.energy);
+    });
+    const eligible = Object.entries(byDow).filter(([, v]) => v.length >= 2);
+    if (eligible.length >= 3) {
+      const avgs = eligible.map(([d, v]) => [d, v.reduce((a,b) => a+b, 0) / v.length, v.length]);
+      avgs.sort((a,b) => a[1] - b[1]);
+      const [lowDow, lowAvg, lowCount] = avgs[0];
+      const others = history.filter(h => new Date(h.ts).getDay() !== +lowDow).map(h => h.energy);
+      const otherAvg = others.reduce((a,b) => a+b, 0) / (others.length || 1);
+      if (otherAvg - lowAvg >= 10) {
+        const dayName = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][lowDow];
+        out.findings.push(
+          `${dayName}s are consistently your lowest. Average energy ${Math.round(lowAvg)}% against ${Math.round(otherAvg)}% across every other day.`
+        );
+      }
+    }
+  }
+
+  // 4. Direction of travel
+  if (n >= 6) {
+    const half = Math.floor(n / 2);
+    const first = history.slice(0, half);
+    const second = history.slice(-half);
+    ['presence','clarity','energy'].forEach(k => {
+      const a = first.reduce((s,h) => s + (h[k] || 0), 0) / first.length;
+      const b = second.reduce((s,h) => s + (h[k] || 0), 0) / second.length;
+      const delta = Math.round(b - a);
+      if (Math.abs(delta) >= 8 && out.findings.length < 4) {
+        out.findings.push(
+          `Your ${k} is trending ${delta > 0 ? 'up' : 'down'} — ${Math.abs(delta)} points across this window.`
+        );
+      }
+    });
+  }
+
+  out.basis = `Based on ${n} check-in${n === 1 ? '' : 's'} across ${days.size} days. These are observations from your own data, not interpretations.`;
+  return out;
+}
+
+const TAG_LABELS = {
+  scattered: 'Scattered', blocked: 'Blocked', busy: 'Busy but stuck', reactive: 'Reacting to others',
+  energy: 'Energy drain', clarity: 'Clarity needed', presence: 'Presence gap',
+  relationships: 'Relationship load', direction: 'Direction unclear', boundaries: 'Boundaries',
+  distracted: 'Distracted', purpose: 'Purpose gap', gap: 'Presence gap', depleted: 'Depleted',
+};
+
+// ══════════════════════════════════════
+// CAPTURE → DATABASE
+// ══════════════════════════════════════
+const IDENTITY_KEY = 'pv_identity';
+
+function loadIdentity() {
+  try { return JSON.parse(localStorage.getItem(IDENTITY_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+
+// Fires on every completed check-in, identified or not.
+async function submitCheckInToDatabase(scores) {
+  const profile = loadProfile();
+  const identity = loadIdentity();
+
+  const payload = {
+    device_id:      getDeviceId(),
+    email:          identity.email || null,
+    name:           identity.name  || null,
+    submitted_at:   new Date().toISOString(),
+    checkin_index:  loadHistory().length,
+    energy_score:   scores.energy,
+    presence_score: scores.presence,
+    clarity_score:  scores.clarity,
+    top_theme:      scores.top,
+    tag_counts:     scores.tagCounts,
+    // The four profile axes travel with every row — this is the field
+    // nothing else in the market has, and it was previously device-only.
+    profile_name:      profile ? profile.name : null,
+    profile_depletion: profile ? profile.answers.depletion : null,
+    profile_recovery:  profile ? profile.answers.recovery  : null,
+    profile_decision:  profile ? profile.answers.decision   : null,
+    profile_load:      profile ? profile.answers.load       : null,
+    hd_self_report:    profile ? (profile.hdSelfReport || null) : null,
+    consent_research:  !!identity.consentResearch,
+    consent_contact:   !!identity.consentContact,
+    answers: Object.fromEntries(
+      Object.entries(state.answers).map(([qid, a]) => [qid, a && (a.text != null ? a.text : a.value)])
+    ),
+    // Spoken answers, stored as qualitative data alongside the structured
+    // scores. Keyed by question id; null (not {}) when nobody spoke, so the
+    // jsonb column stays clean and IS NOT NULL filters work as expected.
+    voice_notes: (state.voiceNotes && Object.keys(state.voiceNotes).length) ? state.voiceNotes : null
+  };
+
+  try {
+    const res = await fetch(CONFIG.apiEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error("Check-in save failed:", err.error || res.status);
+    }
+  } catch (e) {
+    // Silent by design — the person already has their results.
+    console.error("Check-in save error:", e.message);
+  }
+}
+
+// ══════════════════════════════════════
+// KEEP MY HISTORY — the one email ask
+// Fires at check-in 5, dismissible, returns every 5 after a "not now".
+// ══════════════════════════════════════
+function shouldAskToKeep() {
+  const identity = loadIdentity();
+  if (identity.email) return false;
+  const n = loadHistory().length;
+  if (n < CONFIG.keepAskAtCheckin) return false;
+  const dismissedAt = identity.dismissedAt || 0;
+  if (!dismissedAt) return true;
+  return (n - dismissedAt) >= CONFIG.keepAskRepeatEvery;
+}
+
+function renderKeepAsk() {
+  const slot = document.getElementById('keep-slot');
+  if (!slot) return;
+  if (!shouldAskToKeep()) { slot.innerHTML = ''; return; }
+
+  const n = loadHistory().length;
+  slot.innerHTML = `
+    <div class="keep-card" id="keep-card">
+      <div class="keep-flag">Keeping this</div>
+      <div class="keep-title">${n} check-ins, and a pattern worth watching.</div>
+      <p class="keep-body">This all lives on this device. If you clear your browser or pick up your phone instead, it starts over. An email keeps it with you.</p>
+      <input class="keep-input" type="text"  id="keep-name"  placeholder="Your name (optional)" autocomplete="name">
+      <input class="keep-input" type="email" id="keep-email" placeholder="Your email" autocomplete="email" oninput="keepCheckReady()">
+      <label class="consent-row">
+        <input type="checkbox" id="consent-research">
+        <span class="consent-text">Include my responses in anonymised research on presence at work
+          <small>Your answers get pooled with everyone else's and reported as totals and percentages. Nothing identifying you appears anywhere.</small></span>
+      </label>
+      <label class="consent-row">
+        <input type="checkbox" id="consent-contact">
+        <span class="consent-text">It's okay to contact me about going deeper
+          <small>Occasional. Unsubscribe whenever.</small></span>
+      </label>
+      <div class="keep-actions">
+        <button class="btn-solid" id="keep-save" disabled onclick="saveIdentity()">Keep my history</button>
+        <button class="keep-later" onclick="dismissKeepAsk()">Not now</button>
+      </div>
+    </div>`;
+}
+
+function keepCheckReady() {
+  const email = document.getElementById('keep-email').value.trim();
+  document.getElementById('keep-save').disabled = !(email.includes('@') && email.includes('.'));
+}
+
+function saveIdentity() {
+  const identity = {
+    name:  document.getElementById('keep-name').value.trim(),
+    email: document.getElementById('keep-email').value.trim(),
+    consentResearch: document.getElementById('consent-research').checked,
+    consentContact:  document.getElementById('consent-contact').checked,
+    savedAt: Date.now(),
+  };
+  localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity));
+
+  // Link this device's prior rows to the new identity.
+  fetch(CONFIG.apiEndpoint.replace(/\/checkin$/, '/identify'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      device_id: getDeviceId(),
+      email: identity.email,
+      name: identity.name || null,
+      consent_research: identity.consentResearch,
+      consent_contact:  identity.consentContact,
+    })
+  }).catch(e => console.error('Identify failed:', e.message));
+
+  document.getElementById('keep-card').innerHTML = `
+    <div class="keep-flag">Saved</div>
+    <div class="keep-title">Your history follows you now.</div>
+    <p class="keep-done">Open the Vault on any device with that email and everything is here.</p>`;
+}
+
+function dismissKeepAsk() {
+  const identity = loadIdentity();
+  identity.dismissedAt = loadHistory().length;
+  localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity));
+  const card = document.getElementById('keep-card');
+  if (card) card.remove();
+}
+
+// ── Reminder: the checkbox now actually does something ──
+function downloadReminderICS() {
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  t.setHours(9, 0, 0, 0);
+  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const end = new Date(t.getTime() + 10 * 60000);
+
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Be Present LLC//Presence Vault//EN',
+    'BEGIN:VEVENT',
+    'UID:' + Date.now() + '@bepresentllc.com',
+    'DTSTAMP:' + fmt(new Date()),
+    'DTSTART:' + fmt(t),
+    'DTEND:' + fmt(end),
+    'SUMMARY:Presence Vault check-in',
+    'DESCRIPTION:Two minutes. Before you hold space for anyone else.',
+    'URL:' + location.href.split('?')[0],
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'presence-check-in.ics';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
+
+// ══════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════
+const STORAGE_KEY = 'presence_vault_history';
+const LEADS_KEY   = 'pv_leads';
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch (e) { return []; }
+}
+
+function saveCheckIn(scores, profile) {
+  const history = loadHistory();
+  history.push({
+    ts: Date.now(),
+    energy:   scores.energy,
+    presence: scores.presence,
+    clarity:  scores.clarity,
+    tags:     { ...scores.tagCounts },
+    theme:    scores.top,
+    profile:  profile ? profile.name : null,
+    voiceNotes: state.voiceNotes && Object.keys(state.voiceNotes).length ? { ...state.voiceNotes } : null,
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  updateEntryStats();
+}
+
+// ── FIX: clears everything the Vault stores, not just history ──
+function clearHistory() {
+  if (!confirm('Clear all check-in history, your Presence Profile, and any saved recommendations? This can\'t be undone.')) return;
+  [STORAGE_KEY, PROFILE_KEY, LEADS_KEY, IDENTITY_KEY].forEach(k => localStorage.removeItem(k));
+  sessionStorage.removeItem('qa_shown');
+  calAnswers = {};
+  updateEntryStats();
+  show('s-calibrate');
+}
+
+function updateEntryStats() {
+  const history = loadHistory();
+  const wrap = document.getElementById('entry-stats');
+  if (!wrap) return;
+  if (!history.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  // No streak counter. A broken chain lands hardest on the day someone
+  // was too depleted to open this — which is both a wellbeing problem and
+  // a sampling problem, since it filters the dataset toward people who
+  // were doing fine. A plain count carries the same information.
+  const today = new Date();
+  const days = new Set(history.map(h => new Date(h.ts).toDateString()));
+  const since = new Date(history[0].ts)
+    .toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+  const last = history[history.length - 1];
+  const lastDate = new Date(last.ts);
+  const isToday = lastDate.toDateString() === today.toDateString();
+  const lastLabel = isToday ? 'Today' : lastDate.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+
+  document.getElementById('stat-streak').innerHTML =
+    `<span class="stat-num">${history.length}</span><span class="stat-lbl">Check-ins</span>`;
+  document.getElementById('stat-total').innerHTML =
+    `<span class="stat-num">${days.size}</span><span class="stat-lbl">Days</span>`;
+  document.getElementById('stat-last').innerHTML =
+    `<span class="stat-num" style="font-size:18px;margin-top:4px;">${isToday ? lastLabel : since}</span><span class="stat-lbl">${isToday ? 'Last check-in' : 'Since'}</span>`;
+}
+
+function filterByPeriod(period) {
+  const history = loadHistory();
+  const now = Date.now(), day = 86400000;
+  if (period === 'today') return history.filter(h => now - h.ts < day);
+  if (period === 'week')  return history.filter(h => now - h.ts < 7 * day);
+  if (period === 'month') return history.filter(h => now - h.ts < 30 * day);
+  return history;
+}
+
+// ══════════════════════════════════════
+// HISTORY SCREEN
+// ══════════════════════════════════════
+let currentPeriod = 'today';
+
+function switchPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory(period);
+}
+
+function renderHistory(period) {
+  const data = filterByPeriod(period);
+  renderHistoryPatterns();
+  renderSummaryCards(data, period);
+  renderTrendChart(data);
+  renderTagBars(data);
+  renderLog(data);
+}
+
+// Patterns always read the full history, not the period filter —
+// a pattern is a claim about you, not about this week.
+function renderHistoryPatterns() {
+  const el = document.getElementById('history-patterns');
+  const p = detectPatterns(loadHistory(), loadProfile());
+  if (!p.ready) {
+    el.innerHTML = `
+      <div class="insight" style="margin-bottom:32px;">
+        <div class="insight-flag">Patterns</div>
+        <div class="insight-title">Not enough yet.</div>
+        <div class="insight-body">${p.shortfall} Until then, everything below is a record rather than a pattern — and I'd rather say that than invent one.</div>
+      </div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="insight pattern" style="margin-bottom:32px;">
+      <div class="insight-flag">What your data says</div>
+      ${p.findings.map(f => `<div class="pattern-stat">${f}</div>`).join('')}
+      <div class="pattern-basis">${p.basis}</div>
+    </div>`;
+}
+
+function renderSummaryCards(data, period) {
+  if (!data.length) {
+    document.getElementById('history-summary').innerHTML =
+      `<p class="no-data">No check-ins ${period === 'today' ? 'today' : 'in this period'} yet.</p>`;
+    return;
+  }
+  const avg = k => Math.round(data.reduce((s,d) => s + (d[k]||0), 0) / data.length);
+  const avgE = avg('energy'), avgP = avg('presence'), avgC = avg('clarity');
+
+  const all = loadHistory();
+  const periodMs = { today: 86400000, week: 604800000, month: 2592000000, all: Infinity };
+  const ms = periodMs[period] || Infinity;
+  const prior = ms < Infinity
+    ? all.filter(h => Date.now() - h.ts >= ms && Date.now() - h.ts < ms * 2)
+    : [];
+  const priorAvg = k => prior.length ? Math.round(prior.reduce((s,d) => s + (d[k]||0),0) / prior.length) : null;
+  const delta = (cur, key) => {
+    const p = priorAvg(key);
+    if (p === null) return '';
+    const d = cur - p;
+    return d > 0 ? `↑ ${d}% vs prior` : d < 0 ? `↓ ${Math.abs(d)}% vs prior` : 'Same as prior';
+  };
+
+  document.getElementById('history-summary').innerHTML = `
+    <div class="history-summary-row">
+      <div class="summary-card">
+        <div class="summary-num">${avgE}%</div>
+        <div class="summary-lbl">Avg Energy</div>
+        <div class="summary-delta">${delta(avgE,'energy') || `${data.length} check-in${data.length>1?'s':''}`}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${avgP}%</div>
+        <div class="summary-lbl">Avg Presence</div>
+        <div class="summary-delta">${delta(avgP,'presence') || 'This period'}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-num">${avgC}%</div>
+        <div class="summary-lbl">Avg Clarity</div>
+        <div class="summary-delta">${delta(avgC,'clarity') || 'This period'}</div>
+      </div>
+    </div>`;
+}
+
+function renderTrendChart(data) {
+  const chart = document.getElementById('trend-chart');
+  if (!data.length) { chart.innerHTML = '<div class="trend-empty">No data yet for this period.</div>'; return; }
+
+  const byDay = {};
+  data.forEach(h => {
+    const d = new Date(h.ts).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    (byDay[d] = byDay[d] || []).push(h.energy);
+  });
+
+  const today = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const entries = Object.entries(byDay).slice(-14);
+
+  chart.innerHTML = entries.map(([day, vals]) => {
+    const avg = Math.round(vals.reduce((s,v) => s+v, 0) / vals.length);
+    const h = Math.round((avg / 100) * 72);
+    return `<div class="trend-bar-wrap">
+      <div class="trend-bar ${day === today ? 'today-bar' : ''}" style="height:${h}px" title="${day}: ${avg}% energy"></div>
+      <div class="trend-bar-label">${day.split(' ')[1]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTagBars(data) {
+  const el = document.getElementById('tag-bars');
+  if (!data.length) { el.innerHTML = '<p class="no-data">No patterns yet.</p>'; return; }
+
+  const counts = {};
+  data.forEach(h => Object.entries(h.tags || {}).forEach(([tag, count]) => {
+    counts[tag] = (counts[tag] || 0) + count;
+  }));
+
+  const skipTags = new Set(['capacity','intentional','grounded','present','steady','fleeting']);
+  const filtered = Object.entries(counts)
+    .filter(([t]) => !skipTags.has(t))
+    .sort((a,b) => b[1]-a[1])
+    .slice(0, 7);
+
+  if (!filtered.length) { el.innerHTML = '<p class="no-data">Not enough data yet.</p>'; return; }
+  const max = filtered[0][1];
+
+  el.innerHTML = filtered.map(([tag, count]) => `
+    <div class="tag-bar-row">
+      <div class="tag-bar-label">${TAG_LABELS[tag] || tag}</div>
+      <div class="tag-bar-track">
+        <div class="tag-bar-fill" style="width:${Math.round((count/max)*100)}%"></div>
+      </div>
+      <div class="tag-bar-count">${Math.round(count)}</div>
+    </div>`).join('');
+}
+
+function renderLog(data) {
+  const el = document.getElementById('checkin-log');
+  if (!data.length) { el.innerHTML = '<p class="no-data">No check-ins yet.</p>'; return; }
+
+  const themeLabels = {
+    scattered:'Feeling scattered', blocked:'Something blocked', busy:'Busy but stuck',
+    reactive:'Running reactive', presence:'Checking in', energy:'Low energy',
+    relationships:'Relationship weight', direction:'Seeking direction',
+  };
+
+  el.innerHTML = [...data].reverse().slice(0, 20).map(h => {
+    const d = new Date(h.ts);
+    const dateStr = d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+    return `<div class="log-entry">
+      <div class="log-dot"></div>
+      <div>
+        <div class="log-date">${dateStr} · ${timeStr}</div>
+        <div class="log-theme">${themeLabels[h.theme] || 'Check-in'}</div>
+      </div>
+      <div class="log-scores">
+        <span class="log-score">E ${h.energy}%</span>
+        <span class="log-score">P ${h.presence}%</span>
+        <span class="log-score">C ${h.clarity}%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// QUALIFYING ASSESSMENT
+// ══════════════════════════════════════
+const QA_QUESTIONS = [
+  {
+    id: 'qa-role',
+    label: 'How do you show up at work right now?',
+    options: [
+      { text: 'I lead a team — and I feel the weight of that daily.',       scores: { workshop: 2, retreat: 1, strategy: 1 } },
+      { text: 'I run my own thing — it\'s all on me.',                      scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'I\'m mid-level — caught between what\'s above and below me.',scores: { workshop: 3, retreat: 1, strategy: 0 } },
+      { text: 'I\'m building something but haven\'t named it yet.',         scores: { strategy: 2, retreat: 2, workshop: 0 } },
+    ]
+  },
+  {
+    id: 'qa-urgency',
+    label: 'What feels most urgent right now?',
+    options: [
+      { text: 'My team\'s culture — something is off and I can\'t name it.',   scores: { workshop: 3, retreat: 0, strategy: 1 } },
+      { text: 'My own clarity — I\'ve lost the thread of what I\'m building.', scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'My energy — I\'m running on empty and something has to change.',scores: { retreat: 3, strategy: 1, workshop: 0 } },
+      { text: 'All of it — honestly, everything feels like it needs attention.',scores: { retreat: 2, strategy: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-timeline',
+    label: 'How quickly are you looking to move?',
+    options: [
+      { text: 'I need something in the next 30–60 days.',                 scores: { workshop: 2, strategy: 2, retreat: 0 } },
+      { text: 'I\'m planning 2–3 months out — I want to do it right.',    scores: { retreat: 2, strategy: 1, workshop: 1 } },
+      { text: 'I\'m still figuring out what I actually need.',             scores: { strategy: 3, retreat: 0, workshop: 0 } },
+      { text: 'I want to start a conversation and see what makes sense.',  scores: { strategy: 2, retreat: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-format',
+    label: 'What kind of experience resonates most?',
+    options: [
+      { text: 'A structured session for my team — focused, outcomes-clear.', scores: { workshop: 3, retreat: 0, strategy: 0 } },
+      { text: 'Something immersive, away from the office — space to reset.', scores: { retreat: 3, workshop: 0, strategy: 0 } },
+      { text: 'Deep one-to-one work — someone who gets my situation fully.', scores: { strategy: 3, retreat: 0, workshop: 0 } },
+      { text: 'I\'m open — what would you recommend for where I am?',       scores: { strategy: 2, retreat: 1, workshop: 1 } },
+    ]
+  },
+  {
+    id: 'qa-blocker',
+    label: 'What\'s the real thing in the way right now?',
+    options: [
+      { text: 'I can\'t get my team aligned — it slows everything down.',    scores: { workshop: 3, retreat: 0, strategy: 1 } },
+      { text: 'I haven\'t made a decision I\'ve been sitting on for months.',scores: { strategy: 3, retreat: 1, workshop: 0 } },
+      { text: 'I\'m depleted — I can\'t lead well from where I am.',         scores: { retreat: 3, strategy: 1, workshop: 0 } },
+      { text: 'I\'m doing a lot but none of it feels like the right thing.', scores: { strategy: 2, retreat: 2, workshop: 0 } },
+    ]
+  },
+];
+
+const QA_OFFERS = {
+  retreat: {
+    label: 'Aligned & Affirmed Retreat',
+    note: (name) => `${name || 'Hi'} — based on what you shared in your check-in and what you just told me, I don't think more information is what you need right now. I think you need to get out of your environment entirely. Aligned & Affirmed is a small-group retreat built for exactly where you are — depleted, carrying too much, and overdue for a reset that actually goes somewhere. I'll be in touch with details. I'm glad you found this.`,
+  },
+  workshop: {
+    label: 'Empowered Efficiency Workshop',
+    note: (name) => `${name || 'Hi'} — what you're describing, a team that's technically functioning but not quite connected, is the most common thing I see in the companies I work with. It's not a people problem. It's a presence problem. The Empowered Efficiency workshop is designed to give your team the language, the tools, and the honest conversation that shifts the whole dynamic. I'll reach out directly to learn more about your team before I suggest anything specific.`,
+  },
+  strategy: {
+    label: '1:1 Strategy Session',
+    note: (name) => `${name || 'Hi'} — the fact that you know something needs to change but can't quite name what, that's actually exactly where this kind of work starts. A strategy session with me isn't about frameworks or deliverables. It's about helping you see what's already there and decide what's actually worth building next. I'll reach out to find a time that works. I'm looking forward to it.`,
+  },
+};
+
+let qaScores = { retreat: 0, workshop: 0, strategy: 0 };
+let qaAnswers = {};
+let qaTimer = null;
+
+function renderQAQuestions() {
+  document.getElementById('qa-questions-wrap').innerHTML = QA_QUESTIONS.map(q => `
+    <div class="qa-q-block" id="qa-block-${q.id}">
+      <div class="qa-q-label">${q.label}</div>
+      <div class="qa-options">
+        ${q.options.map((opt, i) => `
+          <button class="qa-opt" onclick="selectQAOpt('${q.id}', ${i}, this)">${opt.text}</button>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selectQAOpt(qId, idx, btn) {
+  const block = document.getElementById('qa-block-' + qId);
+  block.querySelectorAll('.qa-opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+
+  const q = QA_QUESTIONS.find(q => q.id === qId);
+  qaAnswers[qId] = { idx, scores: q.options[idx].scores };
+
+  // Recompute from scratch — same fix as the check-in tags.
+  qaScores = { retreat: 0, workshop: 0, strategy: 0 };
+  Object.values(qaAnswers).forEach(a =>
+    Object.entries(a.scores).forEach(([k, v]) => qaScores[k] += v));
+  Object.entries(qaSeed).forEach(([k, v]) => qaScores[k] += v);
+
+  const allAnswered = Object.keys(qaAnswers).length >= QA_QUESTIONS.length;
+  const cap = document.getElementById('qa-capture');
+  cap.style.display = allAnswered ? 'block' : 'none';
+  if (allAnswered) cap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function qaCheckReady() {
+  const email = document.getElementById('qa-email').value.trim();
+  document.getElementById('qa-submit-btn').disabled = !email.includes('@');
+}
+
+function submitQA() {
+  const name  = document.getElementById('qa-name').value.trim();
+  const email = document.getElementById('qa-email').value.trim();
+  const winner = Object.entries(qaScores).sort((a,b) => b[1]-a[1])[0][0];
+  const offer  = QA_OFFERS[winner];
+  const profile = loadProfile();
+
+  const profileLine = profile
+    ? ` One more thing — your profile says ${DEPLETION[profile.answers.depletion].short}. Keep that in view; it's the thing to protect first.`
+    : '';
+
+  const note = offer.note(name) + profileLine;
+
+  const aweberForm = document.createElement('form');
+  aweberForm.action = 'https://www.aweber.com/scripts/addlead.pl';
+  aweberForm.method = 'POST';
+  aweberForm.target = 'aweber-hidden-frame';
+  aweberForm.style.display = 'none';
+
+  const fields = {
+    meta_web_form_id: '1237476762',
+    listname:         'awlist5424529',
+    meta_adtracking:  'Presence_Vault_Assessment',
+    meta_message:     '1',
+    meta_required:    'name,email',
+    from:             'AWeber Form Robot <robot@aweber.com>',
+    unit:             'aweber-from-presencevault',
+    name, email,
+    'custom offer':   winner,
+  };
+
+  Object.entries(fields).forEach(([k, v]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden'; input.name = k; input.value = v;
+    aweberForm.appendChild(input);
+  });
+
+  let iframe = document.getElementById('aweber-hidden-frame');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.name = 'aweber-hidden-frame';
+    iframe.id = 'aweber-hidden-frame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+
+  document.body.appendChild(aweberForm);
+  aweberForm.submit();
+  document.body.removeChild(aweberForm);
+
+  const leads = JSON.parse(localStorage.getItem(LEADS_KEY) || '[]');
+  leads.push({
+    ts: Date.now(), name, email, offer: winner, scores: { ...qaScores },
+    profile: profile ? profile.name : null,
+    theme: Object.entries(state.tagCounts || {}).sort((a,b)=>b[1]-a[1])[0]
+      ? Object.entries(state.tagCounts).sort((a,b)=>b[1]-a[1])[0][0] : null,
+  });
+  localStorage.setItem(LEADS_KEY, JSON.stringify(leads));
+
+  document.getElementById('qa-phase-assess').style.display = 'none';
+  document.getElementById('qa-phase-confirm').style.display = 'block';
+  document.getElementById('qa-confirm-heading').textContent = offer.label;
+  document.getElementById('qa-confirm-note').textContent = note;
+}
+
+let qaSeed = { retreat: 0, workshop: 0, strategy: 0 };
+
+function triggerQAPrompt() {
+  if (!CONFIG.enableQAPrompt) return;
+  if (sessionStorage.getItem('qa_shown')) return;
+  sessionStorage.setItem('qa_shown', '1');
+
+  const tc = state.tagCounts || {};
+  qaSeed = {
+    workshop: ((tc.scattered || 0) + (tc.busy || 0) > 1) ? 1 : 0,
+    strategy: ((tc.blocked || 0) + (tc.direction || 0) > 0) ? 1 : 0,
+    retreat:  ((tc.depleted || 0) + (tc.gap || 0) > 0) ? 1 : 0,
+  };
+  qaScores  = { ...qaSeed };
+  qaAnswers = {};
+
+  renderQAQuestions();
+  document.getElementById('qa-capture').style.display = 'none';
+
+  qaTimer = setTimeout(() => {
+    document.getElementById('qa-overlay').style.display = 'flex';
+  }, CONFIG.qaDelayMs);
+}
+
+function dismissQA() {
+  document.getElementById('qa-overlay').style.display = 'none';
+  clearTimeout(qaTimer);
+}
+
+// ══════════════════════════════════════
+// DEMO DATA — gated. Only loads with ?demo=1
+// ══════════════════════════════════════
+function seedDemo() {
+  if (!DEMO_MODE) return;
+  if (loadHistory().length > 0) return;
+  const now = Date.now(), day = 86400000;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([
+    { ts: now-13*day, energy:45, presence:38, clarity:52, tags:{scattered:1,busy:1,reactive:1}, theme:'scattered' },
+    { ts: now-11*day, energy:60, presence:55, clarity:58, tags:{blocked:1,clarity:1,energy:1},  theme:'blocked' },
+    { ts: now-9*day,  energy:35, presence:30, clarity:40, tags:{busy:2,reactive:1},             theme:'busy' },
+    { ts: now-7*day,  energy:70, presence:65, clarity:72, tags:{intentional:1,presence:1},      theme:'presence' },
+    { ts: now-5*day,  energy:55, presence:48, clarity:60, tags:{relationships:1,energy:1},      theme:'energy' },
+    { ts: now-3*day,  energy:62, presence:58, clarity:68, tags:{blocked:1,direction:1},         theme:'direction' },
+    { ts: now-1*day,  energy:50, presence:44, clarity:55, tags:{scattered:1,boundaries:1},      theme:'scattered' },
+  ]));
+  if (!loadProfile()) {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(buildProfile(
+      { depletion:'clarity', recovery:'solitude', decision:'time', load:'people' }, ''
+    )));
+  }
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+(function init() {
+  seedDemo();
+  greet();
+
+  const profile = loadProfile();
+  if (!profile) {
+    renderCalQuestions();
+    show('s-calibrate', { skipPush: true });
+    history.replaceState({ pvScreen: 's-calibrate' }, '', hashFor('s-calibrate'));
+  } else {
+    show('s-entry', { skipPush: true });
+    history.replaceState({ pvScreen: 's-entry' }, '', hashFor('s-entry'));
+  }
+})();
+</script>
+<!-- End Presence Vault -->
+</body>
+</html>
